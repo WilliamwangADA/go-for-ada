@@ -1,0 +1,230 @@
+/* Ada的围棋小岛 — 温柔奶油小岛风 */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%;
+  overscroll-behavior: none; -webkit-touch-callout: none; touch-action: manipulation;
+  -webkit-user-select: none; user-select: none;
+  font-family: "PingFang SC", "Hiragino Sans GB", "Yuanti SC", sans-serif;
+  background: linear-gradient(#cfeeff 0%, #e8f8e8 55%, #bfe3c0 100%);
+  overflow: hidden;
+}
+button { font-family: inherit; border: none; cursor: pointer; }
+
+.screen { display: none; position: fixed; inset: 0; }
+.screen.active { display: flex; flex-direction: column; align-items: center; }
+
+/* ---------- 首页 ---------- */
+.clouds span { position: absolute; font-size: 54px; opacity: .8; animation: drift 30s linear infinite; }
+.clouds span:nth-child(1) { top: 6%; left: -10%; }
+.clouds span:nth-child(2) { top: 16%; left: -30%; font-size: 40px; animation-duration: 42s; }
+.clouds span:nth-child(3) { top: 3%; left: -55%; font-size: 66px; animation-duration: 55s; }
+@keyframes drift { to { transform: translateX(140vw); } }
+
+.title {
+  margin-top: max(4vh, env(safe-area-inset-top));
+  font-size: clamp(34px, 5.5vw, 58px); color: #4c7a52;
+  text-shadow: 0 3px 0 #fff;  letter-spacing: 4px;
+}
+.homeQiqi { display: flex; align-items: center; gap: 14px; margin-top: 2vh; }
+.qiqiBig { width: clamp(110px, 16vw, 170px); animation: bob 3s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-8px); } }
+.homeHello {
+  background: #fff; border-radius: 22px; padding: 14px 20px;
+  font-size: clamp(17px, 2.2vw, 24px); color: #5a5a4c; line-height: 1.6;
+  box-shadow: 0 4px 14px rgba(90,120,90,.18); position: relative;
+}
+.homeHello::before {
+  content: ""; position: absolute; left: -12px; top: 42%;
+  border: 8px solid transparent; border-right-color: #fff;
+}
+.homeBtns {
+  display: grid; grid-template-columns: repeat(2, minmax(230px, 300px));
+  gap: 18px; margin-top: 3.5vh; padding: 0 4vw;
+}
+.bigBtn {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  font-size: clamp(20px, 2.6vw, 27px); font-weight: 700; color: #fff;
+  padding: 20px 10px; border-radius: 28px;
+  box-shadow: 0 6px 0 rgba(0,0,0,.13), 0 10px 22px rgba(90,120,90,.22);
+  transition: transform .12s;
+}
+.bigBtn:active { transform: translateY(4px) scale(.98); box-shadow: 0 2px 0 rgba(0,0,0,.13); }
+.bigBtn .ico { font-size: 1.35em; }
+.bigBtn.teach { background: linear-gradient(#8fd3f4, #5aa8e8); }
+.bigBtn.cloud { background: linear-gradient(#a7dfa5, #6cbb70); }
+.bigBtn.star  { background: linear-gradient(#ffd58a, #f2a94f); }
+.bigBtn.pvp   { background: linear-gradient(#f4b8d0, #e488ae); }
+
+/* ---------- 棋棋 ---------- */
+.qiqiBig .body, .qiqiSmall .body { fill: #a8e0a0; stroke: #6fae68; stroke-width: 4; }
+.qiqiBig .leaf, .qiqiSmall .leaf { fill: #6cbb70; }
+.qiqiBig .stem, .qiqiSmall .stem { stroke: #6cbb70; stroke-width: 4; stroke-linecap: round; }
+.qiqiBig .eye,  .qiqiSmall .eye  { fill: #3a3a30; }
+.qiqiBig .spark,.qiqiSmall .spark{ fill: #fff; }
+.qiqiBig .cheek,.qiqiSmall .cheek{ fill: #f7b2b2; opacity: .65; }
+.qiqiBig .smile,.qiqiSmall .smile{ fill: none; stroke: #3a3a30; stroke-width: 4; stroke-linecap: round; }
+
+/* ---------- 对局页布局 ---------- */
+.homeBtn {
+  position: absolute; top: max(10px, env(safe-area-inset-top)); left: 14px; z-index: 30;
+  font-size: 30px; background: #fff; border-radius: 50%; width: 58px; height: 58px;
+  box-shadow: 0 4px 10px rgba(90,120,90,.25);
+}
+.playWrap {
+  display: flex; align-items: center; justify-content: center;
+  gap: clamp(10px, 2vw, 30px); width: 100%; height: 100%;
+  padding: max(10px, env(safe-area-inset-top)) 12px 12px;
+}
+#boardBox { height: min(92vh, 92vw, 100%); aspect-ratio: 1; max-width: 60vw; }
+#boardSVG { width: 100%; height: 100%; }
+
+.panel {
+  width: clamp(240px, 26vw, 330px); display: flex; flex-direction: column; gap: 14px;
+}
+.qiqiRow { display: flex; align-items: flex-start; gap: 8px; }
+.qiqiSmall { width: 74px; flex: none; }
+.qiqiSmall.talking { animation: talk .5s ease 3; }
+@keyframes talk { 50% { transform: translateY(-5px) rotate(-4deg); } }
+.bubble {
+  background: #fff; border-radius: 18px; padding: 12px 14px; min-height: 86px;
+  font-size: clamp(15px, 1.7vw, 19px); color: #5a5a4c; line-height: 1.55; flex: 1;
+  box-shadow: 0 4px 12px rgba(90,120,90,.16);
+}
+
+.oppRow { display: flex; align-items: center; gap: 10px; }
+.oppAvatar { font-size: 40px; display: inline-block; }
+.oppAvatar.thinking { animation: think .6s ease infinite; }
+@keyframes think { 50% { transform: translateY(-6px) rotate(8deg); } }
+.oppName { font-size: 20px; font-weight: 700; color: #4c7a52; }
+
+.teamRow {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+  border-radius: 16px; border: 3px solid transparent;
+}
+.teamRow.activeTurn { border-color: #ffd58a; background: #fffbe8; }
+.teamTag {
+  font-size: 16px; font-weight: 700; padding: 5px 10px; border-radius: 12px; flex: none;
+}
+.snowTag  { background: #fff; color: #8a7a5a; border: 2px solid #e8ddc8; }
+.berryTag { background: #7b86d8; color: #fff; }
+.basket { display: flex; gap: 6px; align-items: center; min-height: 40px; }
+.basket .slot {
+  width: 34px; height: 34px; border-radius: 50%; border: 2.5px dashed #b8cdb8;
+}
+.miniStone { width: 38px; height: 38px; }
+.miniStone .body { stroke-width: 5; }
+.miniStone.snow .body { fill: #fffaf2; stroke: #e3d6bd; }
+.miniStone.berry .body { fill: #8b95e0; stroke: #6a72ba; }
+.miniStone .closedEye, .miniStone .smile { fill: none; stroke: #35324a; stroke-width: 5; stroke-linecap: round; }
+.miniStone.berry .closedEye, .miniStone.berry .smile { stroke: #262338; }
+.basketNote { font-size: 14px; color: #7f9a80; line-height: 1.5; }
+.btnRow { display: flex; gap: 10px; flex-wrap: wrap; }
+.softBtn {
+  flex: 1; font-size: 17px; font-weight: 700; color: #4c7a52;
+  background: #fff; padding: 12px 6px; border-radius: 18px;
+  box-shadow: 0 4px 0 #d8e6d3;
+}
+.softBtn:active { transform: translateY(3px); box-shadow: none; }
+.skipBtn {
+  margin-top: 6px; font-size: 16px; color: #8fa890; background: none;
+  align-self: flex-end; padding: 10px;
+}
+
+/* ---------- 棋盘 ---------- */
+.wood { fill: #f5d9a8; stroke: #dbb87e; stroke-width: 5; }
+.grid line { stroke: #b98d55; stroke-width: 3.2; stroke-linecap: round; }
+.grid .hoshi { fill: #b98d55; }
+
+/* ---------- 棋子精灵 ---------- */
+.stone .body { stroke-width: 4; }
+.stone.snow .body { fill: #fffaf2; stroke: #e3d6bd; }
+.stone.berry .body { fill: #8b95e0; stroke: #6a72ba; }
+.stone .eye { fill: #35324a; }
+.stone.berry .eye { fill: #262338; }
+.stone .spark { fill: #fff; }
+.stone .cheek { fill: #f7b2b2; opacity: .55; }
+.stone.berry .cheek { fill: #f0c4de; opacity: .7; }
+.stone .smile { fill: none; stroke: #35324a; stroke-width: 4; stroke-linecap: round; }
+.stone.berry .smile { stroke: #262338; }
+.stone, .stone .eyes { transform-box: fill-box; transform-origin: center; }
+.stone .eyes { animation: blink 6s ease-in-out infinite; }
+@keyframes blink { 0%, 96%, 100% { transform: scaleY(1); } 98% { transform: scaleY(.08); } }
+.stone.born { animation: born .4s cubic-bezier(.34,1.56,.64,1); }
+@keyframes born { 0% { opacity: 0; transform: scale(.2); } 70% { transform: scale(1.15); } 100% { opacity: 1; transform: scale(1); } }
+.stone.wobble { animation: wobble .7s ease 3; }
+@keyframes wobble { 25% { transform: rotate(7deg); } 75% { transform: rotate(-7deg); } }
+.stone.sleepy .eyes { animation: none; transform: scaleY(.1); }
+
+/* 影子/预览 */
+.ghostWrap .stone { opacity: .6; }
+.ghostRing {
+  fill: none; stroke: #6cbb70; stroke-width: 5; stroke-dasharray: 14 10;
+  animation: spin 5s linear infinite; transform-origin: center; transform-box: fill-box;
+}
+@keyframes spin { to { rotate: 360deg; } }
+.ghostTag rect { fill: #6cbb70; }
+.ghostTag text { fill: #fff; font-size: 26px; font-weight: 700; text-anchor: middle; }
+
+/* 闪光提示点 */
+.twinkle { transform-box: fill-box; transform-origin: center; animation: pulse 1.2s ease-in-out infinite; }
+.twinkle circle { fill: #ffe9a8; opacity: .9; }
+.twinkle path { fill: #ffca4f; }
+@keyframes pulse { 50% { transform: scale(1.35); opacity: .65; } }
+
+/* 气泡泡 */
+.qibubble { animation: bubbleIn .35s ease backwards; }
+@keyframes bubbleIn { from { opacity: 0; } }
+.qibubble .bub {
+  fill: #bfe6ff; opacity: .85; stroke: #8fcdf5; stroke-width: 3;
+  animation: breathe 1.6s ease-in-out infinite;
+  transform-origin: center; transform-box: fill-box;
+}
+@keyframes breathe { 50% { transform: scale(1.18); } }
+.qibubble .shine { fill: #fff; opacity: .9; }
+.qibubble.burst { animation: fadeOut .35s ease forwards; }
+.qibubble.burst .bub { animation: burst .35s ease forwards; }
+@keyframes fadeOut { to { opacity: 0; } }
+@keyframes burst { to { transform: scale(1.9); } }
+.countPop {
+  font-size: 46px; font-weight: 800; fill: #4c7a52; text-anchor: middle;
+  stroke: #fff; stroke-width: 6; paint-order: stroke;
+  animation: countUp 1.3s ease forwards;
+}
+@keyframes countUp { 0% { opacity: 0; } 15% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-30px); } }
+
+/* 提子飞走 */
+.captureFly { animation: flyAway .9s ease-in forwards; }
+.captureFly .wrapBubble { fill: #bfe6ff; opacity: .55; stroke: #8fcdf5; stroke-width: 3; }
+.captureFly { transform-box: fill-box; transform-origin: center; }
+@keyframes flyAway {
+  0% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-260px) scale(.6); }
+}
+
+/* ---------- 结算 ---------- */
+.overlay {
+  position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+  background: rgba(80, 110, 85, .35); z-index: 40;
+}
+.overlay.open { display: flex; }
+.ovCard {
+  background: #fffdf6; border-radius: 32px; padding: 34px 44px; text-align: center;
+  box-shadow: 0 14px 40px rgba(60,80,60,.3); animation: born .45s cubic-bezier(.34,1.56,.64,1);
+}
+.ovEmoji { font-size: 74px; }
+.ovTitle { font-size: 34px; font-weight: 800; color: #4c7a52; margin: 10px 0 22px; }
+.ovBtns { display: flex; gap: 14px; }
+
+/* 彩带 */
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+.confetti span { position: absolute; top: -50px; animation: fall 3.6s ease-in forwards; }
+@keyframes fall { to { transform: translateY(115vh) rotate(320deg); } }
+
+/* ---------- 竖屏 / 小屏 ---------- */
+@media (orientation: portrait) {
+  .playWrap { flex-direction: column; }
+  #boardBox { max-width: 94vw; height: auto; width: min(94vw, 58vh); }
+  .panel { width: 94vw; }
+  .qiqiRow .bubble { min-height: 60px; }
+  .homeBtns { grid-template-columns: minmax(230px, 340px); }
+}
