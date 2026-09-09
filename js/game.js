@@ -169,6 +169,14 @@ function scheduleAi() {
   setTimeout(() => {
     busy = false;
     if (over) return;
+    // 差距太大(超过半个棋盘)就大方认输，夸夸孩子
+    const sc = board.areaScore();
+    if (board.history.length >= 8 &&
+        sc[playerColor] - sc[aiColor()] >= board.size * board.size / 2) {
+      showToast(`${aiCfg().name}认输啦！`);
+      endGame(aiColor(), false, true);
+      return;
+    }
     const mv = aiPickMove(board, aiColor(), aiCfg(), passStreak > 0);
     if (mv < 0) doPass(aiColor(), true);
     else doMove(mv, aiColor());
@@ -188,7 +196,7 @@ function doPass(color, byAi = false) {
   advanceTurn();
 }
 
-function endGame(resigned = null, settledAuto = false) {
+function endGame(resigned = null, settledAuto = false, aiResigned = false) {
   over = true; updateBar();
   const sc = board.areaScore();
   const myC = playerColor, opC = aiColor();
@@ -207,15 +215,20 @@ function endGame(resigned = null, settledAuto = false) {
     win: '你赢啦！🎉', lose: '还差一点点~', draw: '平手啦！🤝',
     pvpB: '黑棋赢啦！🎉', pvpW: '白棋赢啦！🎉',
   };
-  $('#ovTitle').textContent = titles[result];
+  $('#ovTitle').textContent = aiResigned ? `${aiCfg().name}认输，你赢啦！🎉` : titles[result];
   setTimeout(() => {
     $('#overlay').classList.add('open');
-    if (settledAuto) say('settle');
-    if (result === 'win' || result === 'pvpB' || result === 'pvpW') {
+    if (aiResigned) {
       sndWinJing(); confetti();
-      setTimeout(() => say(opponent === 'pvp' ? 'count' : 'win'), settledAuto ? 2600 : 0);
-    } else if (result === 'draw') setTimeout(() => say('draw'), settledAuto ? 2600 : 0);
-    else setTimeout(() => say('lose'), settledAuto ? 2600 : 0);
+      say(opponent === 'star' ? 'ai_resign_star' : 'ai_resign_cloud');
+    } else if (settledAuto) say('settle');
+    if (!aiResigned) {
+      if (result === 'win' || result === 'pvpB' || result === 'pvpW') {
+        sndWinJing(); confetti();
+        setTimeout(() => say(opponent === 'pvp' ? 'count' : 'win'), settledAuto ? 2600 : 0);
+      } else if (result === 'draw') setTimeout(() => say('draw'), settledAuto ? 2600 : 0);
+      else setTimeout(() => say('lose'), settledAuto ? 2600 : 0);
+    }
     // 温柔进阶提示
     const nextTip = $('#ovNext');
     nextTip.style.display = 'none';
