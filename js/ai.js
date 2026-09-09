@@ -6,6 +6,8 @@ const AI_FRIENDS = {
            selfAtariPen: 2, passBar: 0.5, blunder: 0.35 },
   star:  { name: '小星星', emoji: '⭐', noise: 2, capW: 9, atariW: 3, saveW: 8,
            selfAtariPen: 7, passBar: 0.2, blunder: 0.08 },
+  moon:  { name: '小月亮', emoji: '🌙', noise: 0.8, capW: 12, atariW: 5, saveW: 10,
+           selfAtariPen: 9, passBar: 0.1, blunder: 0.02 },
 };
 
 function aiPickMove(board, color, cfg, playerPassed) {

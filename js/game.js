@@ -59,6 +59,7 @@ function startRound() {
   updateBar();
   if (opponent === 'cloud') say('start_cloud');
   else if (opponent === 'star') say('start_star');
+  else if (opponent === 'moon') say('start_moon');
   else say('start_pvp');
   if (isAiTurn()) scheduleAi();
 }
@@ -220,7 +221,8 @@ function endGame(resigned = null, settledAuto = false, aiResigned = false) {
     $('#overlay').classList.add('open');
     if (aiResigned) {
       sndWinJing(); confetti();
-      say(opponent === 'star' ? 'ai_resign_star' : 'ai_resign_cloud');
+      say(opponent === 'moon' ? 'ai_resign_moon' :
+          opponent === 'star' ? 'ai_resign_star' : 'ai_resign_cloud');
     } else if (settledAuto) say('settle');
     if (!aiResigned) {
       if (result === 'win' || result === 'pvpB' || result === 'pvpW') {
@@ -230,16 +232,20 @@ function endGame(resigned = null, settledAuto = false, aiResigned = false) {
       else setTimeout(() => say('lose'), settledAuto ? 2600 : 0);
     }
     // 温柔进阶提示
+    // 温柔进阶链：小云朵 → 小星星 → 7×7 → 小月亮 → 9×9
     const nextTip = $('#ovNext');
     nextTip.style.display = 'none';
-    if (result === 'win' && opponent === 'cloud') {
-      nextTip.textContent = '要不要去找 ⭐小星星 玩玩看？';
-      nextTip.style.display = '';
-      nextTip.onclick = () => { opponent = 'star'; $('#selOpp').value = 'star'; newGame(); };
-    } else if (result === 'win' && opponent === 'star' && boardSize === 5) {
-      nextTip.textContent = '要不要试试更大的 7×7 棋盘？';
-      nextTip.style.display = '';
-      nextTip.onclick = () => { boardSize = 7; $('#selSize').value = '7'; newGame(); };
+    const suggest = (text, fn) => { nextTip.textContent = text; nextTip.style.display = ''; nextTip.onclick = fn; };
+    if (result === 'win') {
+      if (opponent === 'cloud') {
+        suggest('要不要去找 ⭐小星星 玩玩看？', () => { opponent = 'star'; $('#selOpp').value = 'star'; newGame(); });
+      } else if (opponent === 'star' && boardSize === 5) {
+        suggest('要不要试试更大的 7×7 棋盘？', () => { boardSize = 7; $('#selSize').value = '7'; newGame(); });
+      } else if (opponent === 'star' && boardSize >= 7) {
+        suggest('要不要挑战 🌙小月亮？它很会下哦！', () => { opponent = 'moon'; $('#selOpp').value = 'moon'; newGame(); });
+      } else if (opponent === 'moon' && boardSize === 7) {
+        suggest('哇，要不要试试最大的 9×9 棋盘？', () => { boardSize = 9; $('#selSize').value = '9'; newGame(); });
+      }
     }
   }, resigned ? 150 : 900);
 }
