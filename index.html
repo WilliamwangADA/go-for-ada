@@ -52,10 +52,6 @@
     <button id="btnPass" class="btn blue">跳过</button>
     <button id="btnUndo" class="btn blue">悔棋</button>
     <button id="btnNew" class="btn ghost">重新开始</button>
-    <select id="selColor" class="oppSel">
-      <option value="1" selected>⚫ 我用黑棋</option>
-      <option value="2">⚪ 我用白棋</option>
-    </select>
     <select id="selOpp" class="oppSel">
       <option value="cloud" selected>☁️ 和小云朵下</option>
       <option value="star">⭐ 和小星星下</option>
@@ -65,6 +61,27 @@
 </main>
 
 <div id="toast" class="toast"></div>
+
+<!-- 开局选子 -->
+<div id="colorPick" class="overlay">
+  <div class="ovCard">
+    <div class="ovTitle small">你想用哪个小团子呀？</div>
+    <div class="pickRow">
+      <button id="pickBlack" class="pickBtn">
+        <svg viewBox="-50 -50 100 100" class="pickStone"><circle r="40" class="bBody"/>
+          <circle cx="-19" cy="0" r="4.5" class="bFace"/><circle cx="19" cy="0" r="4.5" class="bFace"/>
+          <path d="M -8 2 A 4.2 4.2 0 0 0 0 2 A 4.2 4.2 0 0 0 8 2" class="bMouth"/></svg>
+        <span>黑棋<small>先走</small></span>
+      </button>
+      <button id="pickWhite" class="pickBtn">
+        <svg viewBox="-50 -50 100 100" class="pickStone"><circle r="40" class="wBody"/>
+          <circle cx="-19" cy="0" r="4.5" class="bFace"/><circle cx="19" cy="0" r="4.5" class="bFace"/>
+          <path d="M -8 2 A 4.2 4.2 0 0 0 0 2 A 4.2 4.2 0 0 0 8 2" class="bMouth"/></svg>
+        <span>白棋<small>后走</small></span>
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- 终局 -->
 <div id="overlay" class="overlay">

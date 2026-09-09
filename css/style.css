@@ -115,6 +115,19 @@ button, select { font-family: inherit; }
   font-size: 18px; font-weight: 700; color: #a07800; padding: 12px;
 }
 
+/* ---------- 开局选子 ---------- */
+.pickRow { display: flex; gap: 18px; justify-content: center; }
+.pickBtn {
+  flex: 1; max-width: 170px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  background: #f1f3f5; border: 3px solid #dee2e6; border-radius: 20px;
+  padding: 18px 10px 14px; font-size: 21px; font-weight: 800; color: #212529;
+  transition: transform .12s, border-color .12s;
+}
+.pickBtn:active { transform: scale(.94); border-color: #4c6ef5; }
+.pickBtn small { display: block; font-size: 13px; font-weight: 600; color: #868e96; }
+.pickStone { width: 84px; height: 84px; }
+
 /* ---------- 怎么玩 ---------- */
 .howtoCard { text-align: left; }
 .ruleCard {

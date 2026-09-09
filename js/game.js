@@ -31,22 +31,32 @@ let playerColor = BLACK;         // Ada 执的颜色(仅 AI 模式有意义)
 let turn = BLACK, busy = false, over = false;
 let passStreak = 0;
 let atariWarned = false;
+let firstLoad = true;
 
 function aiCfg() { return AI_FRIENDS[opponent]; }
 function aiColor() { return playerColor === BLACK ? WHITE : BLACK; }
 function isAiTurn() { return opponent !== 'pvp' && turn === aiColor() && !over; }
 
-/* ---------- 开局 ---------- */
+/* ---------- 开局：先选执子(对AI)，再开局 ---------- */
 function newGame() {
   board = new GoBoard(boardSize);
-  turn = BLACK; busy = false; over = false; passStreak = 0; atariWarned = false;
+  turn = BLACK; busy = false; over = true; passStreak = 0; atariWarned = false;
   blob = new BlobBoard($('#board'), boardSize);
   blob.setPosition(board.grid, performance.now());
   $('#overlay').classList.remove('open');
   $('#confetti').innerHTML = '';
-  $('#selColor').style.display = opponent === 'pvp' ? 'none' : '';
   updateBar();
   if (!raf) loop();
+  if (opponent === 'pvp') { startRound(); return; }
+  $('#colorPick').classList.add('open');
+  say(firstLoad ? 'hello' : 'pick_color');
+  firstLoad = false;
+}
+
+function startRound() {
+  $('#colorPick').classList.remove('open');
+  over = false; busy = false;
+  updateBar();
   if (opponent === 'cloud') say('start_cloud');
   else if (opponent === 'star') say('start_star');
   else say('start_pvp');
@@ -274,11 +284,11 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   $('#selSize').onchange = e => { boardSize = +e.target.value; newGame(); };
   $('#selOpp').onchange = e => { opponent = e.target.value; newGame(); };
-  $('#selColor').onchange = e => { playerColor = +e.target.value; newGame(); };
+  $('#pickBlack').onclick = () => { playerColor = BLACK; startRound(); };
+  $('#pickWhite').onclick = () => { playerColor = WHITE; startRound(); };
   $('#ovAgain').onclick = () => newGame();
   $('#btnNew').onclick = () => newGame();
 
   document.body.addEventListener('pointerdown', () => { ac().resume && ac().resume(); }, { once: true });
   newGame();
-  setTimeout(() => say('hello'), 300);
 });
