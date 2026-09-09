@@ -19,6 +19,7 @@ class BlobBoard {
     this.stones = new Map();   // idx -> {color, bornAt}
     this.conns = new Map();    // "a:b" -> t0
     this.dying = [];           // {cells:[{i,color}], t0}
+    this.deny = null;          // {i, t0} 不能落子的提示标记
     this.lastFaceKey = new Map();
     this.resize();
   }
@@ -149,7 +150,32 @@ class BlobBoard {
     for (const g of this.groups()) {
       this.drawBlobSet(ctx, g.cells, g.color, now, {});
     }
+
+    // 「这里不能放」标记：橙色圆圈+叉，晃两下后淡出
+    if (this.deny) {
+      const t = (now - this.deny.t0) / 1000;
+      if (t > 0.8) this.deny = null;
+      else {
+        const [px, py] = this.pt(this.deny.i);
+        const S = this.S;
+        const shake = Math.sin(t * 32) * Math.exp(-t * 5) * S * 0.05;
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, Math.max(0, 1 - (t - 0.45) * 3));
+        ctx.translate(px + shake, py);
+        ctx.strokeStyle = '#e8590c';
+        ctx.lineCap = 'round';
+        ctx.lineWidth = S * 0.07;
+        ctx.beginPath(); ctx.arc(0, 0, S * 0.3, 0, 7); ctx.stroke();
+        const d = S * 0.15;
+        ctx.beginPath();
+        ctx.moveTo(-d, -d); ctx.lineTo(d, d);
+        ctx.moveTo(d, -d); ctx.lineTo(-d, d);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
   }
+  showDeny(i, now) { this.deny = { i, t0: now }; }
 
   drawGrid(ctx) {
     ctx.strokeStyle = COL.line;

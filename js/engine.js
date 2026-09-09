@@ -78,6 +78,25 @@ class GoBoard {
 
   tryPlay(i, color) { return this.simulate(i, color); }
 
+  // 落子不合法的原因：'occupied' | 'suicide' | 'ko' | null(合法)
+  moveError(i, color) {
+    if (this.grid[i] !== EMPTY) return 'occupied';
+    const enemy = color === BLACK ? WHITE : BLACK;
+    const g = [...this.grid];
+    g[i] = color;
+    const captured = new Set();
+    for (const n of this.neighbors(i)) {
+      if (g[n] === enemy && !captured.has(n)) {
+        const grp = this.groupAt(n, g);
+        if (this.libertiesOf(grp, g).length === 0) grp.forEach(s => captured.add(s));
+      }
+    }
+    for (const c of captured) g[c] = EMPTY;
+    if (this.libertiesOf(this.groupAt(i, g), g).length === 0) return 'suicide';
+    if (this.posSeen.has(g.join(''))) return 'ko';
+    return null;
+  }
+
   play(i, color) {
     const r = this.simulate(i, color);
     if (!r) return null;

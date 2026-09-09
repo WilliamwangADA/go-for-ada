@@ -87,8 +87,25 @@ function tapBoard(e) {
   const rect = blob.canvas.getBoundingClientRect();
   const i = blob.hit(e.clientX - rect.left, e.clientY - rect.top);
   if (i < 0) return;
-  if (!board.simulate(i, turn)) { sndSoft(); return; }
+  const err = board.moveError(i, turn);
+  if (err) { explainIllegal(i, err); return; }
   doMove(i, turn);
+}
+
+/* 不能落子：标记 + 提示为什么 */
+const _illegalInfo = {
+  occupied: { toast: '这里已经住着小团子啦', voice: 'cant_occupied' },
+  suicide:  { toast: '放这里一口气都没有，会马上消失哦', voice: 'cant_suicide' },
+  ko:       { toast: '不能变回刚才一模一样的棋盘哦', voice: 'cant_ko' },
+};
+let _lastIllegalVoice = 0;
+function explainIllegal(i, err) {
+  sndSoft();
+  blob.showDeny(i, performance.now());
+  const info = _illegalInfo[err];
+  showToast(info.toast);
+  const now = Date.now();
+  if (now - _lastIllegalVoice > 4000) { _lastIllegalVoice = now; say(info.voice); }
 }
 
 function doMove(i, color) {
