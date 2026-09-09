@@ -1,17 +1,18 @@
-/* 吃子棋规则引擎：落子/气/提子/禁自杀/简单打劫 */
+/* 纯碁(Jungo)规则引擎：落子/提子/禁自杀/禁全同局面(superko)/数子 */
 'use strict';
 
-const EMPTY = 0, SNOW = 1, BERRY = 2; // 雪球队 / 蓝莓队
+const EMPTY = 0, BLACK = 1, WHITE = 2;
 
 class GoBoard {
   constructor(size) {
     this.size = size;
     this.grid = new Array(size * size).fill(EMPTY);
-    this.koPoint = -1;           // 简单劫：禁止立刻回提的点
-    this.captured = { [SNOW]: 0, [BERRY]: 0 }; // 各队被送回家的数量
-    this.history = [];           // 悔棋快照
+    this.captured = { [BLACK]: 0, [WHITE]: 0 };
+    this.history = [];                 // 悔棋快照
+    this.posSeen = new Set([this.key()]); // superko：出现过的局面
   }
 
+  key() { return this.grid.join(''); }
   idx(x, y) { return y * this.size + x; }
   xy(i) { return [i % this.size, Math.floor(i / this.size)]; }
 
@@ -23,25 +24,32 @@ class GoBoard {
     if (y < this.size - 1) n.push(i + this.size);
     return n;
   }
+  diagonals(i) {
+    const [x, y] = this.xy(i), s = this.size, n = [];
+    if (x > 0 && y > 0) n.push(i - s - 1);
+    if (x < s - 1 && y > 0) n.push(i - s + 1);
+    if (x > 0 && y < s - 1) n.push(i + s - 1);
+    if (x < s - 1 && y < s - 1) n.push(i + s + 1);
+    return n;
+  }
 
-  // 同色连通块
-  groupAt(i) {
-    const color = this.grid[i];
+  groupAt(i, grid = this.grid) {
+    const color = grid[i];
     if (color === EMPTY) return [];
     const seen = new Set([i]), stack = [i];
     while (stack.length) {
       for (const n of this.neighbors(stack.pop())) {
-        if (this.grid[n] === color && !seen.has(n)) { seen.add(n); stack.push(n); }
+        if (grid[n] === color && !seen.has(n)) { seen.add(n); stack.push(n); }
       }
     }
     return [...seen];
   }
 
-  libertiesOf(group) {
+  libertiesOf(group, grid = this.grid) {
     const libs = new Set();
     for (const i of group) {
       for (const n of this.neighbors(i)) {
-        if (this.grid[n] === EMPTY) libs.add(n);
+        if (grid[n] === EMPTY) libs.add(n);
       }
     }
     return [...libs];
@@ -49,58 +57,69 @@ class GoBoard {
 
   libertiesAt(i) { return this.libertiesOf(this.groupAt(i)); }
 
-  // 试下：返回 null(不合法) 或 {captured:[idx...]}，不改动棋盘
-  tryPlay(i, color) {
-    if (this.grid[i] !== EMPTY || i === this.koPoint) return null;
-    const enemy = color === SNOW ? BERRY : SNOW;
-    this.grid[i] = color;
+  // 模拟落子：返回 null(不合法) 或 {captured:[...], grid:落子后的棋盘}
+  simulate(i, color) {
+    if (this.grid[i] !== EMPTY) return null;
+    const enemy = color === BLACK ? WHITE : BLACK;
+    const g = [...this.grid];
+    g[i] = color;
     const captured = new Set();
     for (const n of this.neighbors(i)) {
-      if (this.grid[n] === enemy) {
-        const g = this.groupAt(n);
-        if (this.libertiesOf(g).length === 0) g.forEach(s => captured.add(s));
+      if (g[n] === enemy && !captured.has(n)) {
+        const grp = this.groupAt(n, g);
+        if (this.libertiesOf(grp, g).length === 0) grp.forEach(s => captured.add(s));
       }
     }
-    const suicide = captured.size === 0 && this.libertiesAt(i).length === 0;
-    this.grid[i] = EMPTY;
-    return suicide ? null : { captured: [...captured] };
+    for (const c of captured) g[c] = EMPTY;
+    if (this.libertiesOf(this.groupAt(i, g), g).length === 0) return null; // 自杀
+    if (this.posSeen.has(g.join(''))) return null;                        // 全同局面
+    return { captured: [...captured], grid: g };
   }
 
-  // 真落子；返回 {captured} 或 null
+  tryPlay(i, color) { return this.simulate(i, color); }
+
   play(i, color) {
-    const r = this.tryPlay(i, color);
+    const r = this.simulate(i, color);
     if (!r) return null;
-    this.history.push({ grid: [...this.grid], ko: this.koPoint,
-                        cap: { ...this.captured } });
-    this.grid[i] = color;
-    for (const c of r.captured) {
-      this.captured[this.grid[c]]++;
-      this.grid[c] = EMPTY;
-    }
-    // 简单劫：单子提单子时禁止立刻回提
-    this.koPoint = -1;
-    if (r.captured.length === 1 && this.groupAt(i).length === 1 &&
-        this.libertiesAt(i).length === 1) {
-      this.koPoint = r.captured[0];
-    }
+    this.history.push({ grid: [...this.grid], cap: { ...this.captured } });
+    this.grid = r.grid;
+    this.captured[color === BLACK ? WHITE : BLACK] += r.captured.length;
+    this.posSeen.add(this.key());
     return r;
   }
 
-  undo(steps = 1) {
-    let done = false;
-    while (steps-- > 0 && this.history.length) {
-      const s = this.history.pop();
-      this.grid = s.grid; this.koPoint = s.ko; this.captured = s.cap;
-      done = true;
-    }
-    return done;
+  undo() {
+    const s = this.history.pop();
+    if (!s) return false;
+    this.posSeen.delete(this.key());
+    this.grid = s.grid;
+    this.captured = s.cap;
+    return true;
   }
 
   legalMoves(color) {
     const moves = [];
     for (let i = 0; i < this.grid.length; i++) {
-      if (this.grid[i] === EMPTY && this.tryPlay(i, color)) moves.push(i);
+      if (this.grid[i] === EMPTY && this.simulate(i, color)) moves.push(i);
     }
     return moves;
+  }
+
+  // 纯碁数子：棋盘上各方棋子数
+  score() {
+    let b = 0, w = 0;
+    for (const c of this.grid) { if (c === BLACK) b++; else if (c === WHITE) w++; }
+    return { [BLACK]: b, [WHITE]: w };
+  }
+
+  // i 是否为 color 的"真眼"(AI 不填)
+  isTrueEye(i, color) {
+    if (this.grid[i] !== EMPTY) return false;
+    for (const n of this.neighbors(i)) if (this.grid[n] !== color) return false;
+    const diag = this.diagonals(i);
+    let bad = 0;
+    for (const d of diag) if (this.grid[d] !== color && this.grid[d] !== EMPTY) bad++;
+    const offEdge = 4 - diag.length; // 贴边缺失的斜角按严格算
+    return diag.length === 4 ? bad === 0 : bad + 0 === 0 && offEdge >= 0;
   }
 }

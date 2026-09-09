@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Ada的围棋小岛</title>
+<title>围棋小岛</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#bfe3c0">
+<meta name="theme-color" content="#212529">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -16,101 +16,90 @@
 </head>
 <body>
 
-<!-- 首页 -->
-<section id="screenHome" class="screen active">
-  <div class="clouds"><span>☁️</span><span>☁️</span><span>☁️</span></div>
-  <h1 class="title">Ada 的围棋小岛</h1>
-  <div class="homeQiqi">
-    <svg viewBox="-60 -70 120 130" class="qiqiBig">
-      <path class="leaf" d="M0 -52 Q 16 -66 26 -56 Q 18 -44 2 -46 Z"/>
-      <line class="stem" x1="0" y1="-40" x2="0" y2="-52"/>
-      <circle class="body" r="42"/>
-      <ellipse class="cheek" cx="-22" cy="10" rx="9" ry="6"/>
-      <ellipse class="cheek" cx="22" cy="10" rx="9" ry="6"/>
-      <circle class="eye" cx="-14" cy="-4" r="6.5"/>
-      <circle class="eye" cx="14" cy="-4" r="6.5"/>
-      <circle class="spark" cx="-11.5" cy="-6.5" r="2.3"/>
-      <circle class="spark" cx="16.5" cy="-6.5" r="2.3"/>
-      <path class="smile" d="M -14 12 Q 0 24 14 12"/>
-    </svg>
-    <div class="homeHello">嗨，Ada！我是棋棋~<br>想玩哪一个呀？</div>
+<nav class="navbar">
+  <span class="brand">围棋小岛</span>
+  <div class="navRight">
+    <select id="selSize" class="navSel">
+      <option value="5" selected>5 × 5</option>
+      <option value="7">7 × 7</option>
+      <option value="9">9 × 9</option>
+    </select>
+    <button id="btnHowto" class="navBtn">怎么玩</button>
   </div>
-  <div class="homeBtns">
-    <button id="btnTeach" class="bigBtn teach"><span class="ico">🫧</span>和棋棋玩一玩</button>
-    <button id="btnCloud" class="bigBtn cloud"><span class="ico">☁️</span>找小云朵下棋</button>
-    <button id="btnStar" class="bigBtn star"><span class="ico">⭐</span>找小星星下棋</button>
-    <button id="btnPvp" class="bigBtn pvp"><span class="ico">👨‍👩‍👧</span>一起下棋</button>
-  </div>
-</section>
+</nav>
 
-<!-- 对局 / 教学 -->
-<section id="screenPlay" class="screen">
-  <button class="homeBtn" title="回小岛">🏝️</button>
-  <div class="playWrap">
-    <div id="boardBox"></div>
-    <aside class="panel">
-      <div class="qiqiRow">
-        <svg viewBox="-60 -70 120 130" id="qiqiAvatar" class="qiqiSmall">
-          <path class="leaf" d="M0 -52 Q 16 -66 26 -56 Q 18 -44 2 -46 Z"/>
-          <line class="stem" x1="0" y1="-40" x2="0" y2="-52"/>
-          <circle class="body" r="42"/>
-          <ellipse class="cheek" cx="-22" cy="10" rx="9" ry="6"/>
-          <ellipse class="cheek" cx="22" cy="10" rx="9" ry="6"/>
-          <circle class="eye" cx="-14" cy="-4" r="6.5"/>
-          <circle class="eye" cx="14" cy="-4" r="6.5"/>
-          <circle class="spark" cx="-11.5" cy="-6.5" r="2.3"/>
-          <circle class="spark" cx="16.5" cy="-6.5" r="2.3"/>
-          <path class="smile" d="M -14 12 Q 0 24 14 12"/>
-        </svg>
-        <div id="bubbleText" class="bubble">…</div>
-      </div>
-
-      <div id="panelPlay">
-        <div id="oppRow" class="oppRow">
-          <span id="oppAvatar" class="oppAvatar">☁️</span>
-          <span id="oppName" class="oppName">小云朵</span>
-        </div>
-        <div id="pvpRow" class="oppRow" style="display:none">
-          <span class="oppName">你一颗，我一颗~</span>
-        </div>
-        <div class="teamRow" id="turnSnow">
-          <span class="teamTag snowTag">雪球队</span>
-          <div class="basket" id="basketMine"></div>
-        </div>
-        <div class="teamRow" id="turnBerry">
-          <span class="teamTag berryTag">蓝莓队</span>
-          <div class="basket" id="basketTheirs"></div>
-        </div>
-        <div class="basketNote">谁先把对方的精灵送回家休息，谁就赢咯~</div>
-        <div class="btnRow">
-          <button id="btnUndo" class="softBtn">🤲 拿回来</button>
-          <button id="btnAgain" class="softBtn">🔄 再来一局</button>
-        </div>
-      </div>
-
-      <div id="panelTeach" style="display:none">
-        <button id="nextFriendBtn" class="bigBtn cloud" style="display:none"><span class="ico">☁️</span>去找小云朵</button>
-        <button id="btnSkip" class="skipBtn">下一个 ▸</button>
-      </div>
-    </aside>
+<main class="stage">
+  <div id="boardWrap" class="boardArea">
+    <canvas id="board"></canvas>
   </div>
 
-  <div id="overlay" class="overlay">
-    <div class="ovCard">
-      <div id="ovEmoji" class="ovEmoji">🎉</div>
-      <div id="ovTitle" class="ovTitle">你赢啦！</div>
-      <div class="ovBtns">
-        <button id="ovAgain" class="bigBtn cloud">🔄 再来一局</button>
-        <button id="ovHome" class="bigBtn teach">🏝️ 回小岛</button>
-      </div>
+  <div class="scoreBar">
+    <div id="sideBlack" class="side black active">
+      <svg viewBox="-50 -50 100 100" class="barStone"><circle r="40" class="bBody"/>
+        <circle cx="-19" cy="0" r="4.5" class="bFace"/><circle cx="19" cy="0" r="4.5" class="bFace"/>
+        <path d="M -8 2 A 4.2 4.2 0 0 0 0 2 A 4.2 4.2 0 0 0 8 2" class="bMouth"/></svg>
+      <span id="cntBlack" class="cnt">0</span>
+    </div>
+    <div id="sideWhite" class="side white">
+      <span id="cntWhite" class="cnt">0</span>
+      <svg viewBox="-50 -50 100 100" class="barStone"><circle r="40" class="wBody"/>
+        <circle cx="-19" cy="0" r="4.5" class="bFace"/><circle cx="19" cy="0" r="4.5" class="bFace"/>
+        <path d="M -8 2 A 4.2 4.2 0 0 0 0 2 A 4.2 4.2 0 0 0 8 2" class="bMouth"/></svg>
     </div>
   </div>
-</section>
+
+  <div class="ctrlRow">
+    <button id="btnPass" class="btn blue">跳过</button>
+    <button id="btnUndo" class="btn blue">悔棋</button>
+    <button id="btnNew" class="btn ghost">重新开始</button>
+    <select id="selOpp" class="oppSel">
+      <option value="cloud" selected>☁️ 和小云朵下</option>
+      <option value="star">⭐ 和小星星下</option>
+      <option value="pvp">👨‍👩‍👧 两个人玩</option>
+    </select>
+  </div>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<!-- 终局 -->
+<div id="overlay" class="overlay">
+  <div class="ovCard">
+    <div id="ovTitle" class="ovTitle">你赢啦！🎉</div>
+    <div class="ovScore">
+      <span class="ovSide"><svg viewBox="-50 -50 100 100" class="barStone big"><circle r="40" class="bBody"/>
+        <circle cx="-19" cy="0" r="4.5" class="bFace"/><circle cx="19" cy="0" r="4.5" class="bFace"/>
+        <path d="M -8 2 A 4.2 4.2 0 0 0 0 2 A 4.2 4.2 0 0 0 8 2" class="bMouth"/></svg>
+        <b id="ovBlackCnt">0</b></span>
+      <span class="ovVs">VS</span>
+      <span class="ovSide"><b id="ovWhiteCnt">0</b>
+        <svg viewBox="-50 -50 100 100" class="barStone big"><circle r="40" class="wBody"/>
+        <circle cx="-19" cy="0" r="4.5" class="bFace"/><circle cx="19" cy="0" r="4.5" class="bFace"/>
+        <path d="M -8 2 A 4.2 4.2 0 0 0 0 2 A 4.2 4.2 0 0 0 8 2" class="bMouth"/></svg></span>
+    </div>
+    <button id="ovNext" class="nextTip" style="display:none"></button>
+    <button id="ovAgain" class="btn blue wide">再来一局</button>
+  </div>
+</div>
+
+<!-- 怎么玩 -->
+<div id="howto" class="overlay">
+  <div class="ovCard howtoCard">
+    <div class="ovTitle small">怎么玩（点卡片听棋棋讲）</div>
+    <div class="ruleCard" data-voice="howto1">🖤🤍 <b>规则一</b>　黑棋白棋轮流放，也可以点「跳过」休息一手</div>
+    <div class="ruleCard" data-voice="howto2">💨 <b>规则二</b>　被对方团团围住、没有气的棋子，会噗地消失</div>
+    <div class="ruleCard" data-voice="howto3">🔁 <b>规则三</b>　棋盘不能变回和以前一模一样的样子</div>
+    <div class="ruleCard" data-voice="howto4">🏆 <b>规则四</b>　两边都跳过就结束，棋子多的一边赢！</div>
+    <div class="ruleCard" data-voice="howto_face">😊😟😱 <b>小秘密</b>　团子的表情会告诉你它安不安全哦</div>
+    <button id="howtoClose" class="btn blue wide">知道啦</button>
+  </div>
+</div>
 
 <div id="confetti" class="confetti"></div>
 
 <script src="js/engine.js"></script>
 <script src="js/ai.js"></script>
+<script src="js/blob.js"></script>
 <script src="js/voice_lines.js"></script>
 <script src="js/game.js"></script>
 </body>
