@@ -27,12 +27,14 @@ const sndSoft    = () => tone(300, 0.14, 'sine', 0.1);
 let board, blob, raf = 0;
 let boardSize = 5;
 let opponent = 'cloud';          // 'cloud' | 'star' | 'pvp'
+let playerColor = BLACK;         // Ada 执的颜色(仅 AI 模式有意义)
 let turn = BLACK, busy = false, over = false;
 let passStreak = 0;
 let atariWarned = false;
 
 function aiCfg() { return AI_FRIENDS[opponent]; }
-function isAiTurn() { return opponent !== 'pvp' && turn === WHITE && !over; }
+function aiColor() { return playerColor === BLACK ? WHITE : BLACK; }
+function isAiTurn() { return opponent !== 'pvp' && turn === aiColor() && !over; }
 
 /* ---------- 开局 ---------- */
 function newGame() {
@@ -42,11 +44,13 @@ function newGame() {
   blob.setPosition(board.grid, performance.now());
   $('#overlay').classList.remove('open');
   $('#confetti').innerHTML = '';
+  $('#selColor').style.display = opponent === 'pvp' ? 'none' : '';
   updateBar();
   if (!raf) loop();
   if (opponent === 'cloud') say('start_cloud');
   else if (opponent === 'star') say('start_star');
   else say('start_pvp');
+  if (isAiTurn()) scheduleAi();
 }
 
 function loop() {
@@ -54,20 +58,22 @@ function loop() {
   blob.render(performance.now());
 }
 
-/* ---------- 计分条 ---------- */
+/* ---------- 计分条(地盘 = 棋子+圈好的空地) ---------- */
 function updateBar() {
-  const sc = board.score();
+  const st = board.score();
+  const sc = (st[BLACK] > 0 && st[WHITE] > 0) ? board.areaScore() : st;
   $('#cntBlack').textContent = sc[BLACK];
   $('#cntWhite').textContent = sc[WHITE];
   $('#sideBlack').classList.toggle('active', !over && turn === BLACK);
   $('#sideWhite').classList.toggle('active', !over && turn === WHITE);
-  $('#sideWhite').classList.toggle('thinking', isAiTurn() && busy);
+  $('#sideBlack').classList.toggle('thinking', isAiTurn() && busy && aiColor() === BLACK);
+  $('#sideWhite').classList.toggle('thinking', isAiTurn() && busy && aiColor() === WHITE);
 }
 
 /* ---------- 落子 ---------- */
 function tapBoard(e) {
   if (busy || over) return;
-  if (opponent !== 'pvp' && turn !== BLACK) return;
+  if (opponent !== 'pvp' && turn !== playerColor) return;
   const rect = blob.canvas.getBoundingClientRect();
   const i = blob.hit(e.clientX - rect.left, e.clientY - rect.top);
   if (i < 0) return;
@@ -86,20 +92,40 @@ function doMove(i, color) {
   if (r.captured.length) {
     setTimeout(() => sndPop(r.captured.length), 260);
     if (opponent !== 'pvp') {
-      setTimeout(() => say(color === BLACK ? 'capture_cheer' : 'capture_by_ai'), 500);
+      setTimeout(() => say(color === playerColor ? 'capture_cheer' : 'capture_by_ai'), 500);
     }
   }
   turn = color === BLACK ? WHITE : BLACK;
   updateBar();
+  // 地盘都分清楚了 → 自动数子判输赢
+  if (board.history.length >= boardSize * 2 && board.areaScore().settled) {
+    endGame(null, true);
+    return;
+  }
   afterMove(color);
+  advanceTurn();
+}
+
+// 轮到的一方无棋可下 → 自动跳过；否则该 AI 就让 AI 走
+function advanceTurn() {
+  if (over) return;
+  if (!board.legalMoves(turn).length) {
+    showToast(turn === BLACK ? '黑棋没地方下啦，自动跳过' : '白棋没地方下啦，自动跳过');
+    passStreak++;
+    turn = turn === BLACK ? WHITE : BLACK;
+    if (passStreak >= 2) { endGame(); return; }
+    updateBar();
+    advanceTurn();
+    return;
+  }
   if (isAiTurn()) scheduleAi();
 }
 
 function afterMove(justMoved) {
   // 玩家的棋只剩一口气 → 第一次温柔提醒(配合流汗表情)
-  if (opponent === 'pvp' || atariWarned || justMoved !== WHITE) return;
+  if (opponent === 'pvp' || atariWarned || justMoved !== aiColor()) return;
   for (let i = 0; i < board.grid.length; i++) {
-    if (board.grid[i] !== BLACK) continue;
+    if (board.grid[i] !== playerColor) continue;
     const g = board.groupAt(i);
     if (g[0] === i && board.libertiesOf(g).length === 1) {
       atariWarned = true;
@@ -116,9 +142,9 @@ function scheduleAi() {
   setTimeout(() => {
     busy = false;
     if (over) return;
-    const mv = aiPickMove(board, WHITE, aiCfg(), passStreak > 0);
-    if (mv < 0) doPass(WHITE, true);
-    else doMove(mv, WHITE);
+    const mv = aiPickMove(board, aiColor(), aiCfg(), passStreak > 0);
+    if (mv < 0) doPass(aiColor(), true);
+    else doMove(mv, aiColor());
     updateBar();
   }, 750 + Math.random() * 800);
 }
@@ -132,18 +158,21 @@ function doPass(color, byAi = false) {
   showToast(color === BLACK ? '黑棋休息一手' : '白棋休息一手');
   if (passStreak >= 2) { endGame(); return; }
   updateBar();
-  if (isAiTurn()) scheduleAi();
+  advanceTurn();
 }
 
-function endGame(resigned = null) {
+function endGame(resigned = null, settledAuto = false) {
   over = true; updateBar();
-  const sc = board.score();
+  const sc = board.areaScore();
+  const myC = playerColor, opC = aiColor();
   let result;
-  if (resigned) result = resigned === BLACK ? 'lose' : 'win';
-  else result = sc[BLACK] > sc[WHITE] ? 'win' : sc[BLACK] < sc[WHITE] ? 'lose' : 'draw';
   if (opponent === 'pvp') {
     result = sc[BLACK] > sc[WHITE] ? 'pvpB' : sc[BLACK] < sc[WHITE] ? 'pvpW' : 'draw';
     if (resigned) result = resigned === BLACK ? 'pvpW' : 'pvpB';
+  } else if (resigned) {
+    result = resigned === myC ? 'lose' : 'win';
+  } else {
+    result = sc[myC] > sc[opC] ? 'win' : sc[myC] < sc[opC] ? 'lose' : 'draw';
   }
   $('#ovBlackCnt').textContent = sc[BLACK];
   $('#ovWhiteCnt').textContent = sc[WHITE];
@@ -154,11 +183,12 @@ function endGame(resigned = null) {
   $('#ovTitle').textContent = titles[result];
   setTimeout(() => {
     $('#overlay').classList.add('open');
+    if (settledAuto) say('settle');
     if (result === 'win' || result === 'pvpB' || result === 'pvpW') {
       sndWinJing(); confetti();
-      say(opponent === 'pvp' ? 'count' : 'win');
-    } else if (result === 'draw') say('draw');
-    else say('lose');
+      setTimeout(() => say(opponent === 'pvp' ? 'count' : 'win'), settledAuto ? 2600 : 0);
+    } else if (result === 'draw') setTimeout(() => say('draw'), settledAuto ? 2600 : 0);
+    else setTimeout(() => say('lose'), settledAuto ? 2600 : 0);
     // 温柔进阶提示
     const nextTip = $('#ovNext');
     nextTip.style.display = 'none';
@@ -200,15 +230,20 @@ function showToast(text) {
 /* ---------- 悔棋(不限次数) ---------- */
 function undo() {
   if (busy || over) return;
-  const steps = (opponent !== 'pvp' && turn === BLACK) ? 2 : 1;
-  let done = false;
-  for (let k = 0; k < steps; k++) if (board.undo()) done = true;
+  const steps = (opponent !== 'pvp' && turn === playerColor) ? 2 : 1;
+  let done = 0;
+  for (let k = 0; k < steps; k++) if (board.undo()) done++;
   if (!done) { sndSoft(); return; }
   passStreak = 0;
-  turn = opponent === 'pvp' ? (steps === 1 ? (turn === BLACK ? WHITE : BLACK) : turn) : BLACK;
+  if (opponent === 'pvp') {
+    if (done === 1) turn = turn === BLACK ? WHITE : BLACK;
+  } else {
+    turn = board.history.length % 2 === 0 ? BLACK : WHITE;
+  }
   blob.setPosition(board.grid, performance.now());
   updateBar();
   say('undo');
+  if (isAiTurn()) scheduleAi();
 }
 
 /* ---------- 怎么玩 ---------- */
@@ -230,7 +265,7 @@ window.addEventListener('DOMContentLoaded', () => {
   fit();
 
   cv.addEventListener('pointerup', tapBoard);
-  $('#btnPass').onclick = () => { if (!busy && !over && (opponent === 'pvp' || turn === BLACK)) doPass(turn); };
+  $('#btnPass').onclick = () => { if (!busy && !over && (opponent === 'pvp' || turn === playerColor)) doPass(turn); };
   $('#btnUndo').onclick = undo;
   $('#btnHowto').onclick = openHowto;
   $('#howtoClose').onclick = () => { $('#howto').classList.remove('open'); };
@@ -239,6 +274,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   $('#selSize').onchange = e => { boardSize = +e.target.value; newGame(); };
   $('#selOpp').onchange = e => { opponent = e.target.value; newGame(); };
+  $('#selColor').onchange = e => { playerColor = +e.target.value; newGame(); };
   $('#ovAgain').onclick = () => newGame();
   $('#btnNew').onclick = () => newGame();
 

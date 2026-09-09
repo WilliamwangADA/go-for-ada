@@ -112,6 +112,29 @@ class GoBoard {
     return { [BLACK]: b, [WHITE]: w };
   }
 
+  // 地盘计分：棋子 + 只被自己一方围住的空地；settled=没有争议空地了
+  areaScore() {
+    const sc = this.score();
+    const seen = new Set();
+    let settled = true, hasStone = sc[BLACK] + sc[WHITE] > 0;
+    for (let i = 0; i < this.grid.length; i++) {
+      if (this.grid[i] !== EMPTY || seen.has(i)) continue;
+      const region = [i], stack = [i], borders = new Set();
+      seen.add(i);
+      while (stack.length) {
+        const c = stack.pop();
+        for (const n of this.neighbors(c)) {
+          if (this.grid[n] === EMPTY) {
+            if (!seen.has(n)) { seen.add(n); region.push(n); stack.push(n); }
+          } else borders.add(this.grid[n]);
+        }
+      }
+      if (borders.size === 1) sc[[...borders][0]] += region.length;
+      else settled = false;               // 两边都挨着或没挨着棋子=还有争议
+    }
+    return { [BLACK]: sc[BLACK], [WHITE]: sc[WHITE], settled: settled && hasStone };
+  }
+
   // i 是否为 color 的"真眼"(AI 不填)
   isTrueEye(i, color) {
     if (this.grid[i] !== EMPTY) return false;
