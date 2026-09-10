@@ -25,7 +25,7 @@ class BlobBoard {
   }
 
   resize() {
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2); // 高分屏封顶2x，防大画布卡顿
     const css = this.canvas.clientWidth;
     this.canvas.width = css * dpr;
     this.canvas.height = css * dpr;
@@ -128,6 +128,14 @@ class BlobBoard {
       }
     }
     return { libs: libs.size, enemy };
+  }
+
+  // 是否有进行中的动画(静止时可降帧)
+  hasActiveAnim(now) {
+    if (this.dying.length || this.deny) return true;
+    for (const [, st] of this.stones) if (now - st.bornAt < 1200) return true;
+    for (const [, t0] of this.conns) if (now - t0 < 450) return true;
+    return false;
   }
 
   /* ---- 绘制 ---- */

@@ -64,9 +64,14 @@ function startRound() {
   if (isAiTurn()) scheduleAi();
 }
 
+let _frame = 0;
 function loop() {
   raf = requestAnimationFrame(loop);
-  blob.render(performance.now());
+  const now = performance.now();
+  _frame++;
+  // 画面静止时只画 1/4 帧(眨眼够用)，省电防发热
+  if (!blob.hasActiveAnim(now) && _frame % 4) return;
+  blob.render(now);
 }
 
 /* ---------- 计分条(地盘 = 棋子+圈好的空地) ---------- */
@@ -327,4 +332,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.body.addEventListener('pointerdown', () => { ac().resume && ac().resume(); }, { once: true });
   newGame();
+  // 离线缓存：注册放在开局之后，不挡首屏
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
 });
