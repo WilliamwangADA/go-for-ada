@@ -230,6 +230,7 @@ function endGame(resigned = null, settledAuto = false, aiResigned = false) {
   };
   $('#ovTitle').textContent = aiResigned ? `${aiCfg().name}认输，你赢啦！🎉` : titles[result];
   $('#ovMap').style.display = 'none';
+  $('#ovNextStation').style.display = 'none';
   advOnGameEnd(result);
   setTimeout(() => {
     $('#overlay').classList.add('open');

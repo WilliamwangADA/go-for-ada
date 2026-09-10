@@ -51,6 +51,24 @@ const ADV_LEVELS = [
   // 🏰 城堡·棋王挑战
   { id: 'k1', area: 4, icon: '👑', name: '月亮挑战', type: 'game', opp: 'moon', size: 7,
     goal: '最终挑战：赢下小月亮，加冕小棋王！' },
+  // 🌋 火山·七路特训（大棋盘解题）
+  { id: 'v1', area: 5, icon: '🌋', name: '大盘抱抱', size: 7, type: 'capture', budget: 1,
+    black: [10, 11, 16, 19, 24], white: [17, 18], targets: [[17, 18]],
+    goal: '大棋盘上也一样：整团没气了，就一起抱走！', voice: 'adv_capture' },
+  { id: 'v2', area: 5, icon: '🔥', name: '追到墙边', size: 7, type: 'capture', budget: 3,
+    black: [19, 25], white: [26], targets: [[26]],
+    goal: '它会一直逃！追着它，把它赶到墙边抱住！', voice: 'adv_ladder' },
+  { id: 'v3', area: 5, icon: '⚡', name: '大盘一子两吃', size: 7, type: 'captureAny', budget: 3,
+    black: [10, 16, 30, 38], white: [17, 31], targets: [[17], [31]],
+    goal: '还记得那个神奇的点吗？大棋盘上也有哦！', voice: 'adv_double' },
+  { id: 'v4', area: 5, icon: '🏕️', name: '围大大的家', size: 7, type: 'area', budget: 1, threshold: 21,
+    black: [2, 9, 23, 30, 37, 44], white: [4, 11, 18, 25, 32, 39, 46],
+    goal: '长长的栅栏缺了一块！堵上它，一大片都是你的！', voice: 'adv_area' },
+  // 🌈 彩虹桥·九路对局
+  { id: 'r1', area: 6, icon: '🌈', name: '九路云朵战', type: 'game', opp: 'cloud', size: 9,
+    goal: '最大的棋盘！和小云朵下一盘 9×9！' },
+  { id: 'r2', area: 6, icon: '🎆', name: '九路星星战', type: 'game', opp: 'star', size: 9,
+    goal: '九路大棋盘赢下小星星，你就是小棋圣！' },
 ];
 
 const ADV_AREAS = [
@@ -59,12 +77,15 @@ const ADV_AREAS = [
   { icon: '🕳️', name: '山洞 · 围个家' },
   { icon: '🏔️', name: '雪山 · 真正对局' },
   { icon: '🏰', name: '城堡 · 棋王挑战' },
+  { icon: '🌋', name: '火山 · 七路特训' },
+  { icon: '🌈', name: '彩虹桥 · 九路对局' },
 ];
 const ADV_BADGES = [
   { after: 5, name: '小棋童', voice: 'badge_1', icon: '🐣' },
   { after: 9, name: '小棋士', voice: 'badge_2', icon: '🎖️' },
   { after: 13, name: '小棋侠', voice: 'badge_3', icon: '🦸' },
   { after: 16, name: '小棋王', voice: 'badge_4', icon: '👑' },
+  { after: 22, name: '小棋圣', voice: 'badge_5', icon: '🏆' },
 ];
 
 let advPuzzle = null;   // 进行中的解题站
@@ -87,10 +108,13 @@ function advBadgeLevel() {
 }
 
 /* ---------- 地图 ---------- */
-function openMap() {
+let advAutoTimer = 0, advAutoNext = null;
+function advNextStation() { return ADV_LEVELS.find(l => !advCleared().includes(l.id)) || null; }
+
+function openMap(silent = false) {
   renderMap();
   $('#advMap').classList.add('open');
-  say('map_welcome');
+  if (!silent) say('map_welcome');
 }
 function renderMap() {
   const cleared = advCleared();
@@ -120,6 +144,8 @@ function renderMap() {
 
 /* ---------- 进入一站 ---------- */
 function startStation(lv) {
+  clearTimeout(advAutoTimer);
+  advAutoNext = null;
   advReset();
   if (lv.type === 'game') { startAdvGame(lv); return; }
   advPuzzle = lv; advMoves = 0; advBusy = false;
@@ -220,8 +246,8 @@ function advEvaluate() {
       }
     }
     if (!escaped) showToast('小白没地方逃啦！');
-    // 逃完后所有目标都安全了 → 这题走岔了
-    const stillCatchable = advTargetGroups().some(g => board.libertiesOf(g).length <= 1);
+    // 逃完后目标彻底安全(≥3气=追不上了) → 这题走岔了
+    const stillCatchable = advTargetGroups().some(g => board.libertiesOf(g).length <= 2);
     const anyMode = lv.type === 'captureAny';
     const allSafe = advTargetGroups().every(g => board.libertiesOf(g).length >= 2);
     if ((anyMode && allSafe) || (!anyMode && !stillCatchable && !allTargetsGone(lv))) { advFail(); return; }
@@ -236,7 +262,28 @@ function advWin() {
   say(advCleared().length % 2 ? 'adv_success1' : 'adv_success2');
   advMarkCleared(advPuzzle.id);
   showToast('⭐ 挑战成功！');
-  setTimeout(() => { advReset(); openMap(); advCheckBadge(); }, 2000);
+  // 顺滑衔接：庆祝 → 地图上闪一下新星星 → 自动进下一站(升级则先发称号)
+  advAutoTimer = setTimeout(() => {
+    advReset();
+    openMap(true);
+    advAutoTimer = setTimeout(() => advGoNext(), 1600);
+  }, 1900);
+}
+
+/* 前往下一站：有新称号先发称号，关掉后继续；全通关就留在地图 */
+function advGoNext() {
+  clearTimeout(advAutoTimer);
+  const next = advNextStation();
+  const badge = advBadgeLevel();
+  const shown = localStorage.getItem('goAdaBadge') || '';
+  if (badge && badge.name !== shown) {
+    advAutoNext = next;
+    advCheckBadge();
+    return;
+  }
+  $('#advMap').classList.remove('open');
+  if (next) startStation(next);
+  else { openMap(true); showToast('全部通关！你太棒啦！'); }
 }
 
 function advFail() {
@@ -253,7 +300,9 @@ function advOnGameEnd(result) {
   $('#ovMap').style.display = '';
   if (result === 'win') {
     advMarkCleared(advGame.id);
-    $('#ovMap').classList.add('glow');
+    $('#ovNextStation').style.display = advNextStation() ? '' : 'none';
+  } else {
+    $('#ovNextStation').style.display = 'none';
   }
 }
 
@@ -274,18 +323,25 @@ function advCheckBadge() {
 
 /* ---------- 绑定 ---------- */
 window.addEventListener('DOMContentLoaded', () => {
-  $('#btnAdv').onclick = () => openMap();
-  $('#advClose').onclick = () => $('#advMap').classList.remove('open');
+  $('#btnAdv').onclick = () => { clearTimeout(advAutoTimer); openMap(); };
+  $('#advClose').onclick = () => { clearTimeout(advAutoTimer); $('#advMap').classList.remove('open'); };
   $('#missionHint').onclick = () => { if (advPuzzle) say(advPuzzle.voice); };
   $('#missionRetry').onclick = () => { if (advPuzzle && !advBusy) startStation(advPuzzle); };
-  $('#missionMap').onclick = () => { advReset(); newGame(); openMap(); };
+  $('#missionMap').onclick = () => { clearTimeout(advAutoTimer); advReset(); newGame(); openMap(); };
+  $('#ovNextStation').onclick = () => {
+    $('#overlay').classList.remove('open');
+    advGoNext();
+  };
   $('#ovMap').onclick = () => {
     $('#overlay').classList.remove('open');
-    $('#ovMap').classList.remove('glow');
-    const win = advGame && advCleared().includes(advGame.id);
+    clearTimeout(advAutoTimer);
     advReset(); newGame();
-    openMap();
-    if (win) advCheckBadge();
+    openMap(true);
+    advCheckBadge();
   };
-  $('#badgeClose').onclick = () => $('#badgeOv').classList.remove('open');
+  $('#badgeClose').onclick = () => {
+    $('#badgeOv').classList.remove('open');
+    const next = advAutoNext; advAutoNext = null;
+    if (next) { $('#advMap').classList.remove('open'); startStation(next); }
+  };
 });
