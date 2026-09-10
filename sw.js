@@ -1,15 +1,29 @@
 /* 围棋小岛 Service Worker — 首访后秒开、离线可玩 */
-const VERSION = 'go-ada-v041';
+const VERSION = 'go-ada-v050';
 const CORE = [
   './', 'index.html', 'css/style.css', 'manifest.webmanifest',
-  'js/engine.js', 'js/ai.js', 'js/blob.js', 'js/voice_lines.js', 'js/game.js',
+  'js/engine.js', 'js/ai.js', 'js/blob.js', 'js/voice_lines.js', 'js/game.js', 'js/adventure.js',
   'assets/icons/icon-192.png', 'assets/icons/apple-touch-icon.png',
 ];
 const AUDIO = [
+  "audio/adv_area.mp3",
+  "audio/adv_capture.mp3",
+  "audio/adv_capture2.mp3",
+  "audio/adv_choose.mp3",
+  "audio/adv_connect.mp3",
+  "audio/adv_double.mp3",
+  "audio/adv_fail.mp3",
+  "audio/adv_save.mp3",
+  "audio/adv_success1.mp3",
+  "audio/adv_success2.mp3",
   "audio/ai_resign_cloud.mp3",
   "audio/ai_resign_moon.mp3",
   "audio/ai_resign_star.mp3",
   "audio/atari_warn.mp3",
+  "audio/badge_1.mp3",
+  "audio/badge_2.mp3",
+  "audio/badge_3.mp3",
+  "audio/badge_4.mp3",
   "audio/cant_ko.mp3",
   "audio/cant_occupied.mp3",
   "audio/cant_suicide.mp3",
@@ -24,6 +38,7 @@ const AUDIO = [
   "audio/howto4.mp3",
   "audio/howto_face.mp3",
   "audio/lose.mp3",
+  "audio/map_welcome.mp3",
   "audio/pass_ai.mp3",
   "audio/pass_you.mp3",
   "audio/pick_color.mp3",

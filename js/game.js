@@ -39,6 +39,7 @@ function isAiTurn() { return opponent !== 'pvp' && turn === aiColor() && !over; 
 
 /* ---------- 开局：先选执子(对AI)，再开局 ---------- */
 function newGame() {
+  advReset();
   board = new GoBoard(boardSize);
   turn = BLACK; busy = false; over = true; passStreak = 0; atariWarned = false;
   blob = new BlobBoard($('#board'), boardSize);
@@ -88,6 +89,12 @@ function updateBar() {
 
 /* ---------- 落子 ---------- */
 function tapBoard(e) {
+  if (advPuzzle) {
+    const rect0 = blob.canvas.getBoundingClientRect();
+    const p = blob.hit(e.clientX - rect0.left, e.clientY - rect0.top);
+    if (p >= 0) puzzleTap(p);
+    return;
+  }
   if (busy || over) return;
   if (opponent !== 'pvp' && turn !== playerColor) return;
   const rect = blob.canvas.getBoundingClientRect();
@@ -222,6 +229,8 @@ function endGame(resigned = null, settledAuto = false, aiResigned = false) {
     pvpB: '黑棋赢啦！🎉', pvpW: '白棋赢啦！🎉',
   };
   $('#ovTitle').textContent = aiResigned ? `${aiCfg().name}认输，你赢啦！🎉` : titles[result];
+  $('#ovMap').style.display = 'none';
+  advOnGameEnd(result);
   setTimeout(() => {
     $('#overlay').classList.add('open');
     if (aiResigned) {
@@ -241,7 +250,7 @@ function endGame(resigned = null, settledAuto = false, aiResigned = false) {
     const nextTip = $('#ovNext');
     nextTip.style.display = 'none';
     const suggest = (text, fn) => { nextTip.textContent = text; nextTip.style.display = ''; nextTip.onclick = fn; };
-    if (result === 'win') {
+    if (result === 'win' && !advGame) {
       if (opponent === 'cloud') {
         suggest('要不要去找 ⭐小星星 玩玩看？', () => { opponent = 'star'; $('#selOpp').value = 'star'; newGame(); });
       } else if (opponent === 'star' && boardSize === 5) {
@@ -327,8 +336,8 @@ window.addEventListener('DOMContentLoaded', () => {
   $('#selOpp').onchange = e => { opponent = e.target.value; newGame(); };
   $('#pickBlack').onclick = () => { playerColor = BLACK; startRound(); };
   $('#pickWhite').onclick = () => { playerColor = WHITE; startRound(); };
-  $('#ovAgain').onclick = () => newGame();
-  $('#btnNew').onclick = () => newGame();
+  $('#ovAgain').onclick = () => { if (advGame) startStation(advGame); else newGame(); };
+  $('#btnNew').onclick = () => { if (advGame) startStation(advGame); else newGame(); };
 
   document.body.addEventListener('pointerdown', () => { ac().resume && ac().resume(); }, { once: true });
   newGame();

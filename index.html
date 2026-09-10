@@ -19,6 +19,7 @@
 <nav class="navbar">
   <span class="brand">围棋小岛</span>
   <div class="navRight">
+    <button id="btnAdv" class="navBtn">🗺️ 冒险</button>
     <select id="selSize" class="navSel">
       <option value="5" selected>5 × 5</option>
       <option value="7">7 × 7</option>
@@ -30,6 +31,14 @@
 
 <main class="stage">
   <div id="boardWrap" class="boardArea">
+    <div id="missionBar" class="missionBar">
+      <span id="missionText"></span>
+      <span class="missionBtns">
+        <button id="missionHint">💡</button>
+        <button id="missionRetry">🔁</button>
+        <button id="missionMap">🗺️</button>
+      </span>
+    </div>
     <canvas id="board"></canvas>
   </div>
 
@@ -101,6 +110,30 @@
     </div>
     <button id="ovNext" class="nextTip" style="display:none"></button>
     <button id="ovAgain" class="btn blue wide">再来一局</button>
+    <button id="ovMap" class="btn ghost wide" style="display:none">🗺️ 回冒险地图</button>
+  </div>
+</div>
+
+<!-- 冒险地图 -->
+<div id="advMap" class="overlay mapOv">
+  <div class="ovCard mapCard">
+    <div class="mapHead">
+      <span id="advTitleBadge" class="mapBadge">🐣 出发！</span>
+      <span class="mapTitle">冒险地图</span>
+      <span id="advStars" class="mapStars">⭐ × 0</span>
+    </div>
+    <div id="advAreas" class="advAreas"></div>
+    <button id="advClose" class="btn blue wide">先回去下棋</button>
+  </div>
+</div>
+
+<!-- 称号升级 -->
+<div id="badgeOv" class="overlay">
+  <div class="ovCard">
+    <div id="badgeIcon" class="badgeIcon">🐣</div>
+    <div class="badgeTip">Ada 升级啦！你现在是</div>
+    <div id="badgeName" class="badgeName">小棋童</div>
+    <button id="badgeClose" class="btn blue wide">耶！继续冒险</button>
   </div>
 </div>
 
@@ -124,5 +157,6 @@
 <script src="js/blob.js"></script>
 <script src="js/voice_lines.js"></script>
 <script src="js/game.js"></script>
+<script src="js/adventure.js"></script>
 </body>
 </html>

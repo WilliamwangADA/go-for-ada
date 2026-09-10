@@ -139,6 +139,56 @@ button, select { font-family: inherit; }
 .ruleCard:active { background: #dbe4ff; }
 .howtoCard .btn { margin-top: 6px; }
 
+/* ---------- 冒险模式 ---------- */
+.missionBar {
+  display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  z-index: 5; max-width: 92%;
+  background: rgba(255,255,255,.95); border-radius: 18px; padding: 10px 14px;
+  font-size: 17px; font-weight: 600; color: #343a40;
+  box-shadow: 0 4px 14px rgba(0,0,0,.18);
+  align-items: center; gap: 10px;
+}
+body.puzzleMode .missionBar, body.advGameMode .missionBar { display: flex; }
+body.puzzleMode .scoreBar, body.puzzleMode .ctrlRow { display: none; }
+.boardArea { position: relative; }
+.missionBtns { display: flex; gap: 6px; flex: none; }
+.missionBtns button {
+  border: none; background: #f1f3f5; border-radius: 12px;
+  font-size: 19px; padding: 6px 10px; cursor: pointer;
+}
+.missionBtns button:active { background: #dbe4ff; }
+
+.mapOv { align-items: flex-start; overflow-y: auto; }
+.mapCard { width: min(560px, 94vw); margin: 4vh 0; }
+.mapHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.mapTitle { font-size: 24px; font-weight: 800; color: #212529; }
+.mapBadge, .mapStars {
+  font-size: 16px; font-weight: 700; color: #a07800;
+  background: #fff4d6; border-radius: 14px; padding: 6px 12px;
+}
+.advArea { text-align: left; margin-bottom: 14px; }
+.advAreaName { font-size: 17px; font-weight: 800; color: #495057; margin-bottom: 8px; }
+.advSt { display: flex; gap: 10px; flex-wrap: wrap; }
+.advBtn {
+  width: 86px; border: none; border-radius: 16px; cursor: pointer;
+  padding: 10px 4px 8px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: #f1f3f5; transition: transform .12s;
+}
+.advBtn:active { transform: scale(.94); }
+.advBtn .advIco { font-size: 30px; }
+.advBtn .advNm { font-size: 13px; font-weight: 700; color: #495057; }
+.advBtn.done { background: #fff4d6; }
+.advBtn.next { background: #dbe4ff; box-shadow: 0 0 0 3px #4c6ef5; animation: nextPulse 1.4s ease-in-out infinite; }
+@keyframes nextPulse { 50% { box-shadow: 0 0 0 6px rgba(76,110,245,.45); } }
+.advBtn.locked { opacity: .4; cursor: default; }
+
+.badgeIcon { font-size: 84px; animation: badgePop .6s cubic-bezier(.34,1.56,.64,1); }
+@keyframes badgePop { 0% { transform: scale(0) rotate(-30deg); } }
+.badgeTip { font-size: 18px; color: #868e96; margin: 8px 0 4px; }
+.badgeName { font-size: 44px; font-weight: 900; color: #e8a013; margin-bottom: 18px; }
+.btn.ghost.wide { margin-top: 10px; }
+#ovMap.glow { border-color: #ffd43b; background: #fff4d6; color: #a07800; }
+
 /* ---------- 彩带 ---------- */
 .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
 .confetti span { position: absolute; top: -50px; animation: fall 3.6s ease-in forwards; }
