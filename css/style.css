@@ -166,6 +166,9 @@ body.puzzleMode .scoreBar, body.puzzleMode .ctrlRow { display: none; }
   font-size: 16px; font-weight: 700; color: #a07800;
   background: #fff4d6; border-radius: 14px; padding: 6px 12px;
 }
+.mapHint {
+  font-size: 14px; color: #868e96; text-align: center; margin: -6px 0 12px;
+}
 .advArea { text-align: left; margin-bottom: 14px; }
 .advAreaName { font-size: 17px; font-weight: 800; color: #495057; margin-bottom: 8px; }
 .advSt { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -175,7 +178,10 @@ body.puzzleMode .scoreBar, body.puzzleMode .ctrlRow { display: none; }
   background: #f1f3f5; transition: transform .12s;
 }
 .advBtn:active { transform: scale(.94); }
-.advBtn .advIco { font-size: 30px; }
+.advBtn .advIco { font-size: 30px; position: relative; }
+.advBtn .starMark {
+  position: absolute; top: -8px; right: -14px; font-size: 16px; font-style: normal;
+}
 .advBtn .advNm { font-size: 13px; font-weight: 700; color: #495057; }
 .advBtn.done { background: #fff4d6; }
 .advBtn.next { background: #dbe4ff; box-shadow: 0 0 0 3px #4c6ef5; animation: nextPulse 1.4s ease-in-out infinite; }

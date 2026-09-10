@@ -1,5 +1,5 @@
 /* 围棋小岛 Service Worker — 首访后秒开、离线可玩 */
-const VERSION = 'go-ada-v051';
+const VERSION = 'go-ada-v052';
 const CORE = [
   './', 'index.html', 'css/style.css', 'manifest.webmanifest',
   'js/engine.js', 'js/ai.js', 'js/blob.js', 'js/voice_lines.js', 'js/game.js', 'js/adventure.js',

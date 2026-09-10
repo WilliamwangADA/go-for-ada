@@ -91,6 +91,7 @@ const ADV_BADGES = [
 let advPuzzle = null;   // 进行中的解题站
 let advGame = null;     // 进行中的对局站
 let advMoves = 0, advBusy = false;
+let advWasCleared = false; // 本站是不是"重玩"(进站时已过关)
 
 function advCleared() {
   try { return JSON.parse(localStorage.getItem('goAdaAdv') || '[]'); }
@@ -133,7 +134,7 @@ function renderMap() {
       const done = cleared.includes(lv.id);
       const b = document.createElement('button');
       b.className = 'advBtn' + (done ? ' done' : unlocked ? ' next' : ' locked');
-      b.innerHTML = `<span class="advIco">${done ? '⭐' : lv.icon}</span><span class="advNm">${lv.name}</span>`;
+      b.innerHTML = `<span class="advIco">${lv.icon}${done ? '<i class="starMark">⭐</i>' : ''}</span><span class="advNm">${lv.name}</span>`;
       if (done || unlocked) b.onclick = () => { $('#advMap').classList.remove('open'); startStation(lv); };
       if (!done && unlocked) unlocked = false;         // 只亮第一个未过的
       row.appendChild(b);
@@ -147,6 +148,7 @@ function startStation(lv) {
   clearTimeout(advAutoTimer);
   advAutoNext = null;
   advReset();
+  advWasCleared = advCleared().includes(lv.id);
   if (lv.type === 'game') { startAdvGame(lv); return; }
   advPuzzle = lv; advMoves = 0; advBusy = false;
   document.body.classList.add('puzzleMode');
@@ -261,6 +263,12 @@ function advWin() {
   sndWinJing(); confetti();
   say(advCleared().length % 2 ? 'adv_success1' : 'adv_success2');
   advMarkCleared(advPuzzle.id);
+  // 重玩旧站：庆祝后回地图就好，不拽去新关卡
+  if (advWasCleared) {
+    showToast('又赢了一次，真棒！');
+    advAutoTimer = setTimeout(() => { advReset(); openMap(true); }, 2000);
+    return;
+  }
   showToast('⭐ 挑战成功！');
   // 顺滑衔接：庆祝 → 地图上闪一下新星星 → 自动进下一站(升级则先发称号)
   advAutoTimer = setTimeout(() => {
@@ -300,7 +308,8 @@ function advOnGameEnd(result) {
   $('#ovMap').style.display = '';
   if (result === 'win') {
     advMarkCleared(advGame.id);
-    $('#ovNextStation').style.display = advNextStation() ? '' : 'none';
+    // 重玩旧站不往前拽，回地图按钮就够了
+    $('#ovNextStation').style.display = (!advWasCleared && advNextStation()) ? '' : 'none';
   } else {
     $('#ovNextStation').style.display = 'none';
   }
