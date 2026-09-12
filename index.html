@@ -133,7 +133,7 @@
 <div id="badgeOv" class="overlay">
   <div class="ovCard">
     <div id="badgeIcon" class="badgeIcon">🐣</div>
-    <div class="badgeTip">Ada 升级啦！你现在是</div>
+    <div class="badgeTip">升级啦！你现在是</div>
     <div id="badgeName" class="badgeName">小棋童</div>
     <button id="badgeClose" class="btn blue wide">耶！继续冒险</button>
   </div>
@@ -142,22 +142,24 @@
 <!-- 怎么玩 -->
 <div id="howto" class="overlay">
   <div class="ovCard howtoCard">
-    <div class="ovTitle small">怎么玩（点卡片听棋棋讲）</div>
-    <div class="ruleCard" data-voice="howto1">🖤🤍 <b>规则一</b>　黑棋白棋轮流放，也可以点「跳过」休息一手</div>
-    <div class="ruleCard" data-voice="howto2">💨 <b>规则二</b>　被对方团团围住、没有气的棋子，会噗地消失</div>
-    <div class="ruleCard" data-voice="howto3">🔁 <b>规则三</b>　棋盘不能变回和以前一模一样的样子</div>
-    <div class="ruleCard" data-voice="howto4">🏆 <b>规则四</b>　棋子加上圈好的空地就是地盘，地盘大的一边赢！</div>
-    <div class="ruleCard" data-voice="howto_face">😊😟😱 <b>小秘密</b>　团子的表情会告诉你它安不安全哦</div>
+    <div class="ovTitle small">怎么玩</div>
+    <div class="ruleCard">🖤🤍 <b>规则一</b>　黑棋白棋轮流放，也可以点「跳过」休息一手</div>
+    <div class="ruleCard">💨 <b>规则二</b>　被对方团团围住、没有气的棋子，会噗地消失</div>
+    <div class="ruleCard">🔁 <b>规则三</b>　棋盘不能变回和以前一模一样的样子</div>
+    <div class="ruleCard">🏆 <b>规则四</b>　棋子加上圈好的空地就是地盘，地盘大的一边赢！</div>
+    <div class="ruleCard">😊😟😱 <b>小秘密</b>　团子的表情会告诉你它安不安全哦</div>
     <button id="howtoClose" class="btn blue wide">知道啦</button>
   </div>
 </div>
 
 <div id="confetti" class="confetti"></div>
+<canvas id="fx" class="fx"></canvas>
 
 <script src="js/engine.js"></script>
 <script src="js/ai.js"></script>
 <script src="js/blob.js"></script>
-<script src="js/voice_lines.js"></script>
+<script src="js/sfx.js"></script>
+<script src="js/fx.js"></script>
 <script src="js/game.js"></script>
 <script src="js/adventure.js"></script>
 </body>

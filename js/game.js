@@ -3,31 +3,16 @@
 
 const $ = s => document.querySelector(s);
 
-/* ---------- 轻柔音效 ---------- */
-let _ac = null;
-function ac() { if (!_ac) _ac = new (window.AudioContext || window.webkitAudioContext)(); return _ac; }
-function tone(freq, dur, type = 'sine', vol = 0.16, when = 0) {
-  try {
-    const t = ac().currentTime + when;
-    const o = ac().createOscillator(), g = ac().createGain();
-    o.type = type; o.frequency.setValueAtTime(freq, t);
-    o.frequency.exponentialRampToValueAtTime(freq * 0.85, t + dur);
-    g.gain.setValueAtTime(vol, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    o.connect(g).connect(ac().destination);
-    o.start(t); o.stop(t + dur);
-  } catch (e) { /* ignore */ }
-}
-const sndPurun   = () => { tone(340, 0.16, 'sine', 0.22); tone(520, 0.12, 'sine', 0.1, 0.04); };
-const sndPop     = n  => { for (let k = 0; k < Math.min(n, 4); k++) tone(700 + k * 130, 0.16, 'sine', 0.16, k * 0.08); };
-const sndWinJing = () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.32, 'sine', 0.18, i * 0.15));
-const sndSoft    = () => tone(300, 0.14, 'sine', 0.1);
+/* ---------- 轻柔音效(音频核心在 js/sfx.js) ---------- */
+const sndPurun = () => { tone(340, 0.16, 'sine', 0.22); tone(520, 0.12, 'sine', 0.1, 0.04); };
+const sndPop   = n  => { for (let k = 0; k < Math.min(n, 4); k++) tone(700 + k * 130, 0.16, 'sine', 0.16, k * 0.08); };
+const sndSoft  = () => tone(300, 0.14, 'sine', 0.1);
 
 /* ---------- 全局状态 ---------- */
 let board, blob, raf = 0;
 let boardSize = 5;
 let opponent = 'cloud';          // 'cloud' | 'star' | 'pvp'
-let playerColor = BLACK;         // Ada 执的颜色(仅 AI 模式有意义)
+let playerColor = BLACK;         // 玩家执的颜色(仅 AI 模式有意义)
 let turn = BLACK, busy = false, over = false;
 let passStreak = 0;
 let atariWarned = false;
@@ -50,7 +35,7 @@ function newGame() {
   if (!raf) loop();
   if (opponent === 'pvp') { startRound(); return; }
   $('#colorPick').classList.add('open');
-  say(firstLoad ? 'hello' : 'pick_color');
+  sfx('hello');
   firstLoad = false;
 }
 
@@ -58,10 +43,7 @@ function startRound() {
   $('#colorPick').classList.remove('open');
   over = false; busy = false;
   updateBar();
-  if (opponent === 'cloud') say('start_cloud');
-  else if (opponent === 'star') say('start_star');
-  else if (opponent === 'moon') say('start_moon');
-  else say('start_pvp');
+  sfx('start');
   if (isAiTurn()) scheduleAi();
 }
 
@@ -107,18 +89,14 @@ function tapBoard(e) {
 
 /* 不能落子：标记 + 提示为什么 */
 const _illegalInfo = {
-  occupied: { toast: '这里已经住着小团子啦', voice: 'cant_occupied' },
-  suicide:  { toast: '放这里一口气都没有，会马上消失哦', voice: 'cant_suicide' },
-  ko:       { toast: '不能变回刚才一模一样的棋盘哦', voice: 'cant_ko' },
+  occupied: { toast: '这里已经住着小团子啦' },
+  suicide:  { toast: '放这里一口气都没有，会马上消失哦' },
+  ko:       { toast: '不能变回刚才一模一样的棋盘哦' },
 };
-let _lastIllegalVoice = 0;
 function explainIllegal(i, err) {
   sndSoft();
   blob.showDeny(i, performance.now());
-  const info = _illegalInfo[err];
-  showToast(info.toast);
-  const now = Date.now();
-  if (now - _lastIllegalVoice > 4000) { _lastIllegalVoice = now; say(info.voice); }
+  showToast(_illegalInfo[err].toast);
 }
 
 function doMove(i, color) {
@@ -132,7 +110,7 @@ function doMove(i, color) {
   if (r.captured.length) {
     setTimeout(() => sndPop(r.captured.length), 260);
     if (opponent !== 'pvp') {
-      setTimeout(() => say(color === playerColor ? 'capture_cheer' : 'capture_by_ai'), 500);
+      setTimeout(() => sfx(color === playerColor ? 'capture_cheer' : 'capture_by_ai'), 500);
     }
   }
   turn = color === BLACK ? WHITE : BLACK;
@@ -169,7 +147,7 @@ function afterMove(justMoved) {
     const g = board.groupAt(i);
     if (g[0] === i && board.libertiesOf(g).length === 1) {
       atariWarned = true;
-      setTimeout(() => say('atari_warn'), 700);
+      setTimeout(() => { sfx('atari'); showToast('呀，流汗的小团子只剩一口气啦！'); }, 700);
       return;
     }
   }
@@ -201,8 +179,7 @@ function scheduleAi() {
 function doPass(color, byAi = false) {
   passStreak++;
   turn = color === BLACK ? WHITE : BLACK;
-  if (!byAi) say('pass_you');
-  else say('pass_ai');
+  sfx('pass');
   showToast(color === BLACK ? '黑棋休息一手' : '白棋休息一手');
   if (passStreak >= 2) { endGame(); return; }
   updateBar();
@@ -234,18 +211,12 @@ function endGame(resigned = null, settledAuto = false, aiResigned = false) {
   advOnGameEnd(result);
   setTimeout(() => {
     $('#overlay').classList.add('open');
-    if (aiResigned) {
-      sndWinJing(); confetti();
-      say(opponent === 'moon' ? 'ai_resign_moon' :
-          opponent === 'star' ? 'ai_resign_star' : 'ai_resign_cloud');
-    } else if (settledAuto) say('settle');
-    if (!aiResigned) {
-      if (result === 'win' || result === 'pvpB' || result === 'pvpW') {
-        sndWinJing(); confetti();
-        setTimeout(() => say(opponent === 'pvp' ? 'count' : 'win'), settledAuto ? 2600 : 0);
-      } else if (result === 'draw') setTimeout(() => say('draw'), settledAuto ? 2600 : 0);
-      else setTimeout(() => say('lose'), settledAuto ? 2600 : 0);
-    }
+    if (settledAuto) sfx('settle');
+    const won = aiResigned || result === 'win' || result === 'pvpB' || result === 'pvpW';
+    const wait = settledAuto ? 900 : 0;
+    if (won) setTimeout(() => { sfx('win'); confetti(); fireworks(4500); }, wait);
+    else if (result === 'draw') setTimeout(() => sfx('draw'), wait);
+    else setTimeout(() => sfx('lose'), wait);
     // 温柔进阶提示
     // 温柔进阶链：小云朵 → 小星星 → 7×7 → 小月亮 → 9×9
     const nextTip = $('#ovNext');
@@ -303,7 +274,7 @@ function undo() {
   }
   blob.setPosition(board.grid, performance.now());
   updateBar();
-  say('undo');
+  sfx('undo');
   if (isAiTurn()) scheduleAi();
 }
 
@@ -330,9 +301,6 @@ window.addEventListener('DOMContentLoaded', () => {
   $('#btnUndo').onclick = undo;
   $('#btnHowto').onclick = openHowto;
   $('#howtoClose').onclick = () => { $('#howto').classList.remove('open'); };
-  document.querySelectorAll('.ruleCard').forEach(c => {
-    c.addEventListener('pointerup', () => say(c.dataset.voice));
-  });
   $('#selSize').onchange = e => { boardSize = +e.target.value; newGame(); };
   $('#selOpp').onchange = e => { opponent = e.target.value; newGame(); };
   $('#pickBlack').onclick = () => { playerColor = BLACK; startRound(); };

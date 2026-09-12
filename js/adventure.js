@@ -6,39 +6,39 @@ const ADV_LEVELS = [
   // 🏖️ 海滩·抱抱团子
   { id: 'b1', area: 0, icon: '🫧', name: '流汗的团子', size: 5, type: 'capture', budget: 1,
     black: [7, 11, 13], white: [12], targets: [[12]],
-    goal: '小白只剩一口气啦，找到它，抱走！', voice: 'adv_capture' },
+    goal: '小白只剩一口气啦，找到它，抱走！' },
   { id: 'b2', area: 0, icon: '🏖️', name: '角落抱抱', size: 5, type: 'capture', budget: 1,
     black: [1], white: [0], targets: [[0]],
-    goal: '角落里的小白没气啦，把它抱走！', voice: 'adv_capture' },
+    goal: '角落里的小白没气啦，把它抱走！' },
   { id: 'b3', area: 0, icon: '🐚', name: '两个一起抱', size: 5, type: 'capture', budget: 1,
     black: [6, 7, 10, 13, 16], white: [11, 12], targets: [[11, 12]],
-    goal: '两个小白连成一团，一口气没了就一起抱走！', voice: 'adv_capture' },
+    goal: '两个小白连成一团，一口气没了就一起抱走！' },
   { id: 'b4', area: 0, icon: '🌊', name: '先打吃再抱', size: 5, type: 'capture', budget: 2,
     black: [7, 13, 16, 22], white: [12], targets: [[12]],
-    goal: '它还有两口气：先堵一口(打吃)，再堵最后一口！', voice: 'adv_capture2' },
+    goal: '它还有两口气：先堵一口(打吃)，再堵最后一口！' },
   { id: 'b5', area: 0, icon: '⛱️', name: '一子两吃', size: 5, type: 'captureAny', budget: 3,
     black: [2, 6, 16, 22], white: [7, 17], targets: [[7], [17]],
-    goal: '有个神奇的点，一放下去两边小白都危险！', voice: 'adv_double' },
+    goal: '有个神奇的点，一放下去两边小白都危险！' },
   // 🌲 森林·救救伙伴
   { id: 'f1', area: 1, icon: '🌱', name: '快逃呀', size: 5, type: 'save', budget: 1,
     black: [12], white: [7, 11, 13], targets: [12],
-    goal: '你的团子只剩一口气！快带它逃出去！', voice: 'adv_save' },
+    goal: '你的团子只剩一口气！快带它逃出去！' },
   { id: 'f2', area: 1, icon: '🍄', name: '反过来抱走', size: 5, type: 'save', budget: 1,
     black: [8, 12, 14], white: [7, 11, 13], targets: [12],
-    goal: '别怕！包围你的小白里，有一个也快没气了哦！', voice: 'adv_save' },
+    goal: '别怕！包围你的小白里，有一个也快没气了哦！' },
   { id: 'f3', area: 1, icon: '🌲', name: '手拉手', size: 5, type: 'save', budget: 1,
     black: [7, 17], white: [2, 6, 8, 16, 18, 22], targets: [7],
-    goal: '两个团子都危险！有个点能让它们连成一团！', voice: 'adv_connect' },
+    goal: '两个团子都危险！有个点能让它们连成一团！' },
   { id: 'f4', area: 1, icon: '🦉', name: '先救大的', size: 5, type: 'save', budget: 1,
     black: [11, 12, 4], white: [6, 7, 10, 16, 17, 3], targets: [11],
-    goal: '两边都危险，只能救一边——先救大的那团！', voice: 'adv_choose' },
+    goal: '两边都危险，只能救一边——先救大的那团！' },
   // 🕳️ 山洞·围个家
   { id: 'c1', area: 2, icon: '🕯️', name: '堵好栅栏', size: 5, type: 'area', budget: 1, threshold: 15,
     black: [2, 7, 17, 22], white: [4, 9, 14, 19, 24],
-    goal: '栅栏缺了一块！堵上它，左边就都是你的家！', voice: 'adv_area' },
+    goal: '栅栏缺了一块！堵上它，左边就都是你的家！' },
   { id: 'c2', area: 2, icon: '💎', name: '堵住漏风口', size: 5, type: 'area', budget: 1, threshold: 8,
     black: [2, 7, 10], white: [13, 14, 18, 19, 23, 24],
-    goal: '小角落还漏风呢，堵上它，角落就是你的家！', voice: 'adv_area' },
+    goal: '小角落还漏风呢，堵上它，角落就是你的家！' },
   // 🏔️ 雪山·真正对局
   { id: 's1', area: 3, icon: '☁️', name: '云朵之战', type: 'game', opp: 'cloud', size: 5,
     goal: '和小云朵真正下一盘，赢了就过！' },
@@ -54,16 +54,16 @@ const ADV_LEVELS = [
   // 🌋 火山·七路特训（大棋盘解题）
   { id: 'v1', area: 5, icon: '🌋', name: '大盘抱抱', size: 7, type: 'capture', budget: 1,
     black: [10, 11, 16, 19, 24], white: [17, 18], targets: [[17, 18]],
-    goal: '大棋盘上也一样：整团没气了，就一起抱走！', voice: 'adv_capture' },
+    goal: '大棋盘上也一样：整团没气了，就一起抱走！' },
   { id: 'v2', area: 5, icon: '🔥', name: '追到墙边', size: 7, type: 'capture', budget: 3,
     black: [19, 25], white: [26], targets: [[26]],
-    goal: '它会一直逃！追着它，把它赶到墙边抱住！', voice: 'adv_ladder' },
+    goal: '它会一直逃！追着它，把它赶到墙边抱住！' },
   { id: 'v3', area: 5, icon: '⚡', name: '大盘一子两吃', size: 7, type: 'captureAny', budget: 3,
     black: [10, 16, 30, 38], white: [17, 31], targets: [[17], [31]],
-    goal: '还记得那个神奇的点吗？大棋盘上也有哦！', voice: 'adv_double' },
+    goal: '还记得那个神奇的点吗？大棋盘上也有哦！' },
   { id: 'v4', area: 5, icon: '🏕️', name: '围大大的家', size: 7, type: 'area', budget: 1, threshold: 21,
     black: [2, 9, 23, 30, 37, 44], white: [4, 11, 18, 25, 32, 39, 46],
-    goal: '长长的栅栏缺了一块！堵上它，一大片都是你的！', voice: 'adv_area' },
+    goal: '长长的栅栏缺了一块！堵上它，一大片都是你的！' },
   // 🌈 彩虹桥·九路对局
   { id: 'r1', area: 6, icon: '🌈', name: '九路云朵战', type: 'game', opp: 'cloud', size: 9,
     goal: '最大的棋盘！和小云朵下一盘 9×9！' },
@@ -81,11 +81,11 @@ const ADV_AREAS = [
   { icon: '🌈', name: '彩虹桥 · 九路对局' },
 ];
 const ADV_BADGES = [
-  { after: 5, name: '小棋童', voice: 'badge_1', icon: '🐣' },
-  { after: 9, name: '小棋士', voice: 'badge_2', icon: '🎖️' },
-  { after: 13, name: '小棋侠', voice: 'badge_3', icon: '🦸' },
-  { after: 16, name: '小棋王', voice: 'badge_4', icon: '👑' },
-  { after: 22, name: '小棋圣', voice: 'badge_5', icon: '🏆' },
+  { after: 5, name: '小棋童', icon: '🐣' },
+  { after: 9, name: '小棋士', icon: '🎖️' },
+  { after: 13, name: '小棋侠', icon: '🦸' },
+  { after: 16, name: '小棋王', icon: '👑' },
+  { after: 22, name: '小棋圣', icon: '🏆' },
 ];
 
 let advPuzzle = null;   // 进行中的解题站
@@ -115,7 +115,7 @@ function advNextStation() { return ADV_LEVELS.find(l => !advCleared().includes(l
 function openMap(silent = false) {
   renderMap();
   $('#advMap').classList.add('open');
-  if (!silent) say('map_welcome');
+  if (!silent) sfx('map');
 }
 function renderMap() {
   const cleared = advCleared();
@@ -161,7 +161,7 @@ function startStation(lv) {
   over = false; busy = false; turn = BLACK; playerColor = BLACK;
   $('#overlay').classList.remove('open');
   $('#missionText').textContent = lv.goal;
-  say(lv.voice);
+  sfx('start');
   if (!raf) loop();
 }
 
@@ -179,9 +179,7 @@ function startAdvGame(lv) {
   document.body.classList.add('advGameMode');
   updateBar();
   if (!raf) loop();
-  if (opponent === 'cloud') say('start_cloud');
-  else if (opponent === 'star') say('start_star');
-  else say('start_moon');
+  sfx('start');
   if (isAiTurn()) scheduleAi();
 }
 
@@ -260,8 +258,7 @@ function allTargetsGone(lv) { return lv.targets.flat().every(c => board.grid[c] 
 
 function advWin() {
   advBusy = true;
-  sndWinJing(); confetti();
-  say(advCleared().length % 2 ? 'adv_success1' : 'adv_success2');
+  sfx('success'); confetti(); fireworks(2200);
   advMarkCleared(advPuzzle.id);
   // 重玩旧站：庆祝后回地图就好，不拽去新关卡
   if (advWasCleared) {
@@ -296,7 +293,7 @@ function advGoNext() {
 
 function advFail() {
   advBusy = true;
-  say('adv_fail');
+  sfx('fail');
   showToast('再试一次吧~');
   const lv = advPuzzle;
   setTimeout(() => startStation(lv), 1800);
@@ -324,8 +321,7 @@ function advCheckBadge() {
       $('#badgeIcon').textContent = badge.icon;
       $('#badgeName').textContent = badge.name;
       $('#badgeOv').classList.add('open');
-      sndWinJing(); confetti();
-      say(badge.voice);
+      sfx('badge'); confetti(); fireworks(5000);
     }, 600);
   }
 }
@@ -334,7 +330,7 @@ function advCheckBadge() {
 window.addEventListener('DOMContentLoaded', () => {
   $('#btnAdv').onclick = () => { clearTimeout(advAutoTimer); openMap(); };
   $('#advClose').onclick = () => { clearTimeout(advAutoTimer); $('#advMap').classList.remove('open'); };
-  $('#missionHint').onclick = () => { if (advPuzzle) say(advPuzzle.voice); };
+  $('#missionHint').onclick = () => { if (advPuzzle) { sfx('hello'); showToast(advPuzzle.goal); } };
   $('#missionRetry').onclick = () => { if (advPuzzle && !advBusy) startStation(advPuzzle); };
   $('#missionMap').onclick = () => { clearTimeout(advAutoTimer); advReset(); newGame(); openMap(); };
   $('#ovNextStation').onclick = () => {
